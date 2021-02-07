@@ -1,0 +1,13 @@
+[Unit]
+Description=Solar service
+After=network.target
+
+[Service]
+ExecStart=/home/pi/pisolar/solar.sh
+WorkingDirectory=/home/pi/pisolar
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
