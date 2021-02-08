@@ -8,7 +8,8 @@ systemctl enable solar
 ```
 # connect the PI I2C to the arduino I2C
 
-# connect the arduino output(11) to IN(1) of the relay board, the cut the + cable of the USB 
+# connect the arduino output(11) to IN(1) of the relay board.
+The relay is used to cut the + cable of the USB that power the PI.
 
 # start the arduino (plug it!)
 
