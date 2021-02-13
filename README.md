@@ -11,7 +11,7 @@ systemctl enable solar
 # connect the arduino output(11) to IN(1) of the relay board.
 The relay is used to cut the + cable of the USB that power the PI.
 
-# Connect the + of battery to 1M ohms + 470k ohms divisor
+# Connect the + off the LiPo battery to 1M ohms + 470k ohms divisor
 The A5 of the arduino is connected after the 1M ohms resistor
 270/(1000+270) = .2126 (basic LiPo will gives 4.2 = .893, 2.7 = .574 values)
 
