@@ -1,5 +1,6 @@
 # pisolar
 software for arduino to power off the PI and power on after a while, the PI use I2C to start the power off/power on cycle.
+Look to: https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c to install the software on PI.
 
 # install the service
 ```bash
