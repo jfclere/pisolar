@@ -2,6 +2,8 @@
 
 
 #include "TinyWireS.h"
+#include "core_adc.h"
+
 
 #define SHUTDOWNTIME 1000
 #define WAITFACTOR 60000
@@ -9,12 +11,14 @@
 bool up = true; // start it!!!
 int stopfor = 0;
 int val = 0;
-// int analogPin = ADC2;
+
 uint8_t c = 0;
 const int ledgreen = PB1;
 const int ledred = PB3;
+const int analogPin = ADC_Input_ADC2; // PB4;
 bool redon = false;
 bool greenon = false;
+bool start_conversion = true;
 
 void setup()
 {
@@ -28,6 +32,27 @@ void setup()
 void loop()
 {
   TinyWireS_stop_check();
+  if (start_conversion) {
+    start_conversion = false;
+    ADC_SetVoltageReference(ADC_Reference_Internal_1p1);
+    ADC_SetInputChannel(analogPin);
+    ADC_StartConversion();
+  } else {
+    /* ADC conversion in progress */
+    if(!ADC_ConversionInProgress()) {
+      /* we have a value, read it */
+      val = ADC_GetDataRegister();
+      // start_conversion = true;
+      if (greenon) {
+       digitalWrite(ledgreen, LOW);
+        greenon = false;
+      } else {
+        digitalWrite(ledgreen, HIGH);
+        greenon = true;
+      }
+      ADC_StartConversion();
+    }
+  }
   /* 
   
   delay(100);
@@ -75,7 +100,12 @@ void receiveEvent(uint8_t howMany)
 }
 void requestEvent ()
 {
-  TinyWireS.send(c);
+  // TinyWireS.send(c);
+  if (c)
+    TinyWireS.send((uint8_t) (val%256));
+  else
+    TinyWireS.send((uint8_t) (val/256));
+ /*     
   if (greenon) {
       digitalWrite(ledgreen, LOW);
       greenon = false;
@@ -83,6 +113,7 @@ void requestEvent ()
       digitalWrite(ledgreen, HIGH);
       greenon = true;
   }
+  */
 
   /*
   if (c)
