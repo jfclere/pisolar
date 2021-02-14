@@ -59,10 +59,13 @@ void receiveEvent(uint8_t howMany)
   while(howMany--)
   {
     c = TinyWireS.receive(); // receive byte as a character
-    if (redon)
+    if (redon) {
       digitalWrite(ledred, LOW);
-    else
+      redon = false;
+    } else {
       digitalWrite(ledred, HIGH);
+      redon = true;
+    }
     /* if (c) {
       stopfor = c;
       up = false;
@@ -73,10 +76,13 @@ void receiveEvent(uint8_t howMany)
 void requestEvent ()
 {
   TinyWireS.send(c);
-  if (greenon)
+  if (greenon) {
       digitalWrite(ledgreen, LOW);
-    else
+      greenon = false;
+  } else {
       digitalWrite(ledgreen, HIGH);
+      greenon = true;
+  }
 
   /*
   if (c)

@@ -639,7 +639,8 @@ ISR( USI_OVERFLOW_VECTOR )
     case USI_SLAVE_CHECK_REPLY_FROM_SEND_DATA:
       // Execute request callback for each byte requested, as this is the intended
       // behavior of this library
-      USI_REQUEST_CALLBACK();
+      // JFC never called!!!
+      // USI_REQUEST_CALLBACK();
       if ( USIDR )
       {
         // if NACK, the master does not want more data
@@ -654,6 +655,12 @@ ISR( USI_OVERFLOW_VECTOR )
     // next USI_SLAVE_REQUEST_REPLY_FROM_SEND_DATA
     case USI_SLAVE_SEND_DATA:
       // Get data from Buffer
+      // JFC was OK USI_REQUEST_CALLBACK();
+      if ( !txCount )
+      {
+        // Nothing try to request something...
+        USI_REQUEST_CALLBACK();
+      }
       if ( txCount )
       {
         USIDR = txBuf[ txTail ];
