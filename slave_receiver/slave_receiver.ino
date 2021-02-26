@@ -1,4 +1,5 @@
 // Wire Slave Receiver
+// Attiny45 controling a LiPo Rider Pro to power a PIzero
 
 
 #include "TinyWireS.h"
@@ -8,18 +9,22 @@
 #define SHUTDOWNTIME 1000
 #define WAITFACTOR 60000
 
-bool up = true; // start it!!!
 int stopfor = 0;
 int val = 0;
+int sending = 0; // to store val while sending it.
 
 uint8_t c = 0;
 const int ledgreen = PB1;
 const int ledred = PB3;
 const int analogPin = ADC_Input_ADC2; // PB4;
 bool redon = false;
-bool greenon = false;
+bool ispion = false;
 bool start_conversion = true;
 
+/* 3V according to divisor (1000+220)/220 = 5.5454 and ref = 1.1V */
+/* 505/1024*1.1*5.5454 = 3.0805 V */
+/* according to my testa until around 440 = 2.621 V the USB is stable */ 
+#define BATLOW 505
 void setup()
 {
   TinyWireS.begin(0x04);                // join i2c bus with address #4
@@ -43,36 +48,43 @@ void loop()
       /* we have a value, read it */
       val = ADC_GetDataRegister();
       // start_conversion = true;
-      if (greenon) {
-       digitalWrite(ledgreen, LOW);
-        greenon = false;
-      } else {
+      if (val<BATLOW) {
         digitalWrite(ledgreen, HIGH);
-        greenon = true;
+        ispion = false;
+      } else {
+        digitalWrite(ledgreen, LOW);
+        ispion = true;
       }
       ADC_StartConversion();
     }
   }
-  /* 
+
+  /* do nothing until we don't know if we have enough battery */
+  if (!val)
+     return;
+
+  /* Not enough battery and off do nothing */
+  if (val<BATLOW && !ispion)
+     return;
+
   
-  delay(100);
-  val = analogRead(analogPin);
+  // stop and sleep.
   if (stopfor) {
     // We have just received a stop for the PI
     delay(SHUTDOWNTIME); // give time to stop.
+    digitalWrite(ledgreen, HIGH);
+    ispion = false;
+    delay(stopfor * WAITFACTOR);
+    stopfor = 0;
+    val = 0;
+    return;
   }
-  if (up)
-    digitalWrite(led, HIGH);
-  else {
-    // stop and wait for stopfor seconds 
-    digitalWrite(led, LOW);
-    if (stopfor) {
-      delay(stopfor * WAITFACTOR);
-      stopfor = 0;
-      up = true;
-    }
+
+  // Otherwise just switch on.
+  if (!ispion) {
+    digitalWrite(ledgreen, LOW);
+    ispion = true;
   }
-  */
 }
 
 // function that executes whenever data is received from master
@@ -91,34 +103,19 @@ void receiveEvent(uint8_t howMany)
       digitalWrite(ledred, HIGH);
       redon = true;
     }
-    /* if (c) {
+    // c = 0 : read high, c = 1 : read low, otherwise PI sleeps for c.
+    if (c>1) {
       stopfor = c;
-      up = false;
     }
-    */
   }
 }
 void requestEvent ()
 {
-  // TinyWireS.send(c);
-  if (c)
-    TinyWireS.send((uint8_t) (val%256));
-  else
-    TinyWireS.send((uint8_t) (val/256));
- /*     
-  if (greenon) {
-      digitalWrite(ledgreen, LOW);
-      greenon = false;
+  // Send the low or high value
+  if (c) {
+    TinyWireS.send((uint8_t) (sending%256));
   } else {
-      digitalWrite(ledgreen, HIGH);
-      greenon = true;
+    sending = val;
+    TinyWireS.send((uint8_t) (sending/256));
   }
-  */
-
-  /*
-  if (c)
-    TinyWireS.send(val/256);
-  else
-    TinyWireS.send(val%256);
-  */
 }
