@@ -6,10 +6,10 @@
 #include "core_adc.h"
 
 
-#define SHUTDOWNTIME 1000
-#define WAITFACTOR 60000
+#define SHUTDOWNTIME 30000UL
+#define WAITFACTOR 60000UL
 
-int stopfor = 0;
+unsigned long stopfor = 0;
 int val = 0;
 int sending = 0; // to store val while sending it.
 
@@ -74,6 +74,13 @@ void loop()
     delay(SHUTDOWNTIME); // give time to stop.
     digitalWrite(ledgreen, HIGH);
     ispion = false;
+    if (redon) {
+      digitalWrite(ledred, LOW);
+      redon = false;
+    } else {
+      digitalWrite(ledred, HIGH);
+      redon = true;
+    }
     delay(stopfor * WAITFACTOR);
     stopfor = 0;
     val = 0;
