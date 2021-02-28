@@ -24,7 +24,7 @@ if [ "${code}" == "200" ]; then
   /usr/bin/echo "mkcol ${BASEDIR}" > cmd.txt
   /usr/bin/echo "mkcol ${DIR}" >> cmd.txt
   /usr/bin/echo "put /tmp/now.jpg ${FILE}" >> cmd.txt
-  /usr/bin/cadaver -r /home/pi/.netrc https://jfclere.myddns.me/webdav/ < cmd.txt
+  /usr/bin/cadaver https://jfclere.myddns.me/webdav/ < cmd.txt
   # sleep 5 minutes and restart
   /home/pi/pisolar/wait.py 5
   if [ $? -ne 0 ]; then
