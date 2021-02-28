@@ -3,6 +3,7 @@ Description=Solar service
 After=network.target
 
 [Service]
+User=pi
 ExecStart=/home/pi/pisolar/solar.sh
 WorkingDirectory=/home/pi/pisolar
 StandardOutput=inherit

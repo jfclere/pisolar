@@ -21,10 +21,10 @@ if [ "${code}" == "200" ]; then
   BASEDIR=`/usr/bin/dirname ${DIR}`
   /usr/bin/echo "${FILE} ${DIR} ${BASEDIR}"
   /usr/bin/raspistill -o /tmp/now.jpg
-  /usr/bin/echo "mkcol ${BASEDIR}" > cmd.txt
-  /usr/bin/echo "mkcol ${DIR}" >> cmd.txt
-  /usr/bin/echo "put /tmp/now.jpg ${FILE}" >> cmd.txt
-  /usr/bin/cadaver https://jfclere.myddns.me/webdav/ < cmd.txt
+  /usr/bin/echo "mkcol ${BASEDIR}" > /tmp/cmd.txt
+  /usr/bin/echo "mkcol ${DIR}" >> /tmp/cmd.txt
+  /usr/bin/echo "put /tmp/now.jpg ${FILE}" >> /tmp/cmd.txt
+  /usr/bin/cadaver https://jfclere.myddns.me/webdav/ < /tmp/cmd.txt
   # sleep 5 minutes and restart
   /home/pi/pisolar/wait.py 5
   if [ $? -ne 0 ]; then
