@@ -15,6 +15,17 @@ if [ "${code}" == "200" ]; then
   val=`expr $val + $low`
   /usr/bin/curl -o /dev/null --silent --head https://jfclere.myddns.me/~jfclere/off${val}
   #echo "$val $high $low"
+  # take a picture and send it.
+  FILE=`/usr/bin/date +%Y%m%d/%H00/%Y%m%d%H%M%S.jpg`
+  DIR=`/usr/bin/dirname ${FILE}`
+  BASEDIR=`/usr/bin/dirname ${DIR}`
+  /usr/bin/echo "${FILE} ${DIR} ${BASEDIR}"
+  /usr/bin/raspistill -o /tmp/now.jpg
+  /usr/bin/echo "mkcol ${BASEDIR}" > cmd.txt
+  /usr/bin/echo "mkcol ${DIR}" >> cmd.txt
+  /usr/bin/echo "put /tmp/now.jpg ${FILE}" >> cmd.txt
+  /usr/bin/cadaver -r /home/pi/.netrc https://jfclere.myddns.me/webdav/ < cmd.txt
+  # sleep 5 minutes and restart
   /home/pi/pisolar/wait.py 5
   if [ $? -ne 0 ]; then
     exit 0
