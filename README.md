@@ -1,6 +1,10 @@
 # pisolar
 software for ATTiny45 to power off the PI and power on after a while, the PI use I2C to start the power off/power on cycle.
 Look to: https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c to install the software on PI.
+```bash
+sudo apt install cadaver
+sudo apt install python-smbus
+```
 
 # install the service
 ```bash
