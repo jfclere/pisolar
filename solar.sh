@@ -37,5 +37,5 @@ if [ "${code}" == "200" ]; then
   if [ $? -ne 0 ]; then
     exit 0
   fi
-  /usr/sbin/poweroff
+  /usr/bin/sudo /usr/sbin/poweroff
 fi
