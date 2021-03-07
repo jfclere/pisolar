@@ -25,3 +25,10 @@ The Pin 2 of the ATTiny is connected after the 1M ohms resistor
 
 I am using this to send a picture of the outside my window, taken by the RPI zero, ~ every 8 minutes to my server (using mod_dav and cadaver).
 
+cadaver uses  ~/.netrc:
+
+machine my_server_hostname
+
+login my_user
+
+passwd my_password
