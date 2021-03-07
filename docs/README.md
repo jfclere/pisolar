@@ -1,7 +1,7 @@
 Notes on jfclere cables
 From the RPI
 
-brown = group
+brown = ground
 
 green = 3.3V
 
