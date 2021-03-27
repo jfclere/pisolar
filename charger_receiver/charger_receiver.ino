@@ -55,10 +55,10 @@ void loop()
       val = ADC_GetDataRegister();
       // start_conversion = true;
       if (val<BATCHARGED) {
-        digitalWrite(ledgreen, HIGH);
+        digitalWrite(ledgreen, LOW);
         ispion = false;
       } else {
-        digitalWrite(ledgreen, LOW);
+        digitalWrite(ledgreen, HIGH);
         ispion = true;
       }
       ADC_StartConversion();
