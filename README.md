@@ -20,8 +20,11 @@ In fact I am not used a Relay but a MOSFET P and optocoupler but that is the sam
 
 # Connect the + off the LiPo battery to 1M ohms + 220k ohms divisor
 The Pin 2 of the ATTiny is connected after the 1M ohms resistor
-220/(1000+220) = .180 (basic LiPo will gives 4.2 = .757, 2.7 = .487 values)
+220/(1000+220) = .180
 
+Basic LiPo will gives 4.2 = .757 when charged and 2.7 = .487 when empty.
+
+We use the 1.1V ref on the ATTiny45 so charged: 4.2/.0059675 = 703 empty: 2.7/.0059675 = 452
 
 # start the ATTiny (plug it! to the 3.3V LiPo)
 
