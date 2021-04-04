@@ -53,6 +53,8 @@ if [ "${code}" == "200" ]; then
   /usr/bin/echo "mkcol ${BASEDIR}" > /tmp/cmd.txt
   /usr/bin/echo "mkcol ${DIR}" >> /tmp/cmd.txt
   /usr/bin/echo "put /tmp/now.jpg ${FILE}" >> /tmp/cmd.txt
+  /usr/bin/python /home/pi/pisolar/bme280.py > /tmp/temp.txt
+  /usr/bin/echo "put /tmp/temp.txt temp.txt" >> /tmp/cmd.txt
   /usr/bin/cadaver https://jfclere.myddns.me/webdav/ < /tmp/cmd.txt
   # sleep 5 minutes and restart
   /home/pi/pisolar/wait.py 5
