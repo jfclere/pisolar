@@ -1,25 +1,47 @@
 #!/bin/bash
 
-# check for the server (for ever for the moment)
-while true
+# check for the server (for one hour for the moment)
+i=0
+while [ $i -lt 60 ]
 do
   /usr/bin/ping -c 1 -W 10 jfclere.myddns.me
   if [ $? -ne 0 ]; then
-    sleep 60
+    /usr/bin/sleep 60
   else
     break
   fi
+  i=`/usr/bin/expr $i + 1`
 done
+if [ $i -eq 60 ]; then
+  # sleep 5 minutes and restart
+  /home/pi/pisolar/wait.py 5
+  if [ $? -ne 0 ]; then
+    exit 0
+  fi
+  /usr/bin/sudo /usr/sbin/poweroff
+fi
+
+#
+# Check the time
+/usr/bin/timedatectl status | /usr/bin/grep synchronized | /usr/bin/grep yes > /dev/null
+if [ $? -ne 0 ]; then
+  /usr/bin/sudo /usr/bin/systemctl restart systemd-timesyncd.service
+  /usr/bin/sleep 5
+fi
 
 code=`/usr/bin/curl -o /dev/null --silent --head --write-out '%{http_code}' https://jfclere.myddns.me/~jfclere/off`
+if [ $? -ne 0 ]; then
+  # just retry
+  code=`/usr/bin/curl -o /dev/null --silent --head --write-out '%{http_code}' https://jfclere.myddns.me/~jfclere/off`
+fi
 if [ "${code}" == "200" ]; then
   # Do what is neeeded
   /usr/bin/echo "200: YES!!!"
   # tell arduino to wait 5 minutes and restart.
   high=`/home/pi/pisolar/wait.py 0`
   low=`/home/pi/pisolar/wait.py 1`
-  val=`expr $high \\* 256`
-  val=`expr $val + $low`
+  val=`/usr/bin/expr $high \\* 256`
+  val=`/usr/bin/expr $val + $low`
   /usr/bin/curl -o /dev/null --silent --head https://jfclere.myddns.me/~jfclere/off${val}
   #echo "$val $high $low"
   # take a picture and send it.
