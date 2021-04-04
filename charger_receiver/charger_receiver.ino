@@ -7,10 +7,12 @@
 
 
 #define SHUTDOWNTIME 30000UL
-#define WAITFACTOR 60000UL
+#define WAITFACTOR 1000UL
 
 unsigned long stopfor = 0;
-int val = 0;
+int val = 0; // medium value
+int sum = 0; // sum
+int count = 0;
 int sending = 0; // to store val while sending it.
 
 uint8_t c = 0;
@@ -25,6 +27,10 @@ const int analogPin = ADC_Input_ADC2; // PB4;
 bool redon = false;
 bool ispion = false;
 bool start_conversion = true;
+// we have 3 states: auto, force on and force off.
+bool automode = true;
+bool forcebaton = false;
+bool forceusb = false;
 
 /* 3V according to divisor (1000+220)/220 = 5.5454 and ref = 1.1V */
 /* 505/1024*1.1*5.5454 = 3.0805 V */
@@ -52,14 +58,20 @@ void loop()
     /* ADC conversion in progress */
     if(!ADC_ConversionInProgress()) {
       /* we have a value, read it */
-      val = ADC_GetDataRegister();
-      // start_conversion = true;
-      if (val<BATCHARGED) {
-        digitalWrite(ledgreen, LOW);
-        ispion = false;
-      } else {
-        digitalWrite(ledgreen, HIGH);
-        ispion = true;
+      int curval = ADC_GetDataRegister();
+      sum = sum + curval;
+      count++;
+      if (count == 10) {
+        val = sum / 10;
+        count = 0;
+        sum = 0;
+      }
+      if (automode) {
+        if (val<BATCHARGED) {
+          digitalWrite(ledgreen, LOW);
+        } else {
+          digitalWrite(ledgreen, HIGH);
+        }
       }
       ADC_StartConversion();
     }
@@ -73,33 +85,38 @@ void loop()
   if (val<BATLOW && !ispion)
      return;
 
-
-  /*
   // stop and sleep.
   if (stopfor) {
     // We have just received a stop for the PI
-    delay(SHUTDOWNTIME); // give time to stop.
-    digitalWrite(ledgreen, HIGH);
-    ispion = false;
-    if (redon) {
-      digitalWrite(ledred, LOW);
-      redon = false;
-    } else {
-      digitalWrite(ledred, HIGH);
-      redon = true;
+    if (ispion) {
+      delay(SHUTDOWNTIME); // give time to stop.
+      digitalWrite(ledred, LOW); // disable 5 V USB.
+      ispion = false;
     }
-    delay(stopfor * WAITFACTOR);
-    stopfor = 0;
-    val = 0;
+    delay(WAITFACTOR);
+    stopfor--;
     return;
   }
 
   // Otherwise just switch on.
   if (!ispion) {
-    digitalWrite(ledgreen, LOW);
+    digitalWrite(ledred, HIGH); // enable 5 V USB
     ispion = true;
   }
-  */
+
+  // Forced mode for debuggging the hardware!!!
+  if (!automode) {
+    if (forcebaton){
+      digitalWrite(ledgreen, LOW);
+    } else {
+      digitalWrite(ledgreen, HIGH);
+    }
+    if (forceusb) {
+      digitalWrite(ledred, HIGH); // enable 5 V USB
+    } else {
+      digitalWrite(ledred, LOW); // disable 5 V USB.
+    }
+  }
 }
 
 // function that executes whenever data is received from master
@@ -111,16 +128,31 @@ void receiveEvent(uint8_t howMany)
   while(howMany--)
   {
     c = TinyWireS.receive(); // receive byte as a character
-    if (redon) {
-      digitalWrite(ledred, LOW);
-      redon = false;
-    } else {
-      digitalWrite(ledred, HIGH);
-      redon = true;
+    // c = 0 : read high
+    // c = 1 : read low and auto mode
+    // c = 2 force bat on.
+    // c = 3 force bat off.
+    // c = 4 force USB on.
+    // c = 5 force USB off.
+    // otherwise PI sleeps for c.
+    if (c == 1) {
+      automode = true;
+    } else if (c == 2) {
+      automode = false;
+      forcebaton =  true;
+    } else if (c == 3) {
+      automode = false;
+      forcebaton = false;
+    } else if (c == 4) {
+      automode = false;
+      forceusb = true;
+    } else if (c == 5){
+      automode = false;
+      forceusb = false;
     }
-    // c = 0 : read high, c = 1 : read low, otherwise PI sleeps for c.
-    if (c>1) {
-      stopfor = c;
+    if (c>5) {
+      automode = true;
+      stopfor = c * 60;
     }
   }
 }
