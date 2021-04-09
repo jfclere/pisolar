@@ -4,6 +4,11 @@ code=`/usr/bin/curl -o /dev/null --silent --head --write-out '%{http_code}' http
 if [ $? -ne 0 ]; then
   # just retry
   code=`/usr/bin/curl -o /dev/null --silent --head --write-out '%{http_code}' https://jfclere.myddns.me/~jfclere/report`
+  if [ $? -ne 0 ]; then
+    echo "ERROR can't curl to server"
+    /usr/bin/sudo /usr/sbin/reboot
+    exit 0
+  fi
 fi
 if [ "${code}" != "200" ]; then
   echo "Not configured! $code"
@@ -19,14 +24,21 @@ if [ $? -eq 0 ]; then
     val=`/usr/bin/expr $val + $low`
     #echo "$high:$low:$val"
     /usr/bin/curl -o /dev/null --silent --head https://jfclere.myddns.me/~jfclere/report${val}
+  else
+    echo "ERROR low"
+    /usr/bin/sudo /usr/sbin/reboot
   fi
 else
-  echo "ERROR"
+  echo "ERROR high"
+  /usr/bin/sudo /usr/sbin/reboot
+  exit 0
 fi
 
 # sleep 6 minutes and restart
 /home/pi/pisolar/wait.py 6
 if [ $? -ne 0 ]; then
+  echo "ERROR can't set waiting time"
+  /usr/bin/sudo /usr/sbin/reboot
   exit 0
 fi
 /usr/bin/sudo /usr/sbin/poweroff
