@@ -1,0 +1,13 @@
+[Unit]
+Description=Solar report service
+After=network.target
+
+[Service]
+User=pi
+ExecStart=/home/pi/pisolar/report.sh
+WorkingDirectory=/home/pi/pisolar
+StandardOutput=inherit
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target
