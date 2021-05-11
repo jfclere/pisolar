@@ -59,7 +59,10 @@ if [ "${code}" == "200" ]; then
   # sleep 5 minutes and restart
   /home/pi/pisolar/wait.py 5
   if [ $? -ne 0 ]; then
+    /usr/bin/echo "FAILED: can't return in wait mode!!!"
     exit 0
   fi
   /usr/bin/sudo /usr/sbin/poweroff
+else
+    /usr/bin/echo "FAILED: code: ${code}!!!"
 fi
