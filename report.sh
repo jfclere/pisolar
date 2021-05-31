@@ -34,6 +34,13 @@ else
   exit 0
 fi
 
+#
+# read the image and send it.
+/usr/bin/raspistill -o /tmp/now.jpg
+/usr/bin/echo "put /tmp/now.jpg now.jpg" > /tmp/cmd.txt
+/usr/bin/cadaver https://jfclere.myddns.me/webdav/ < /tmp/cmd.txt
+
+#
 # sleep 6 minutes and restart
 /home/pi/pisolar/wait.py 6
 if [ $? -ne 0 ]; then
