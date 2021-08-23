@@ -39,3 +39,7 @@ machine my_server_hostname
 login my_user
 
 passwd my_password
+
+# 3.3V to USB
+
+Use 5V USB BOOST 500 MA in docs/Newversion.pdf it is connect to the EN (Enable pin)
