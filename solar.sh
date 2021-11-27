@@ -49,7 +49,7 @@ if [ "${code}" == "200" ]; then
   DIR=`/usr/bin/dirname ${FILE}`
   BASEDIR=`/usr/bin/dirname ${DIR}`
   /usr/bin/echo "${FILE} ${DIR} ${BASEDIR}"
-  /usr/bin/raspistill -o /tmp/now.jpg
+  /usr/bin/libcamera-still -o /tmp/now.jpg
   /usr/bin/echo "mkcol ${BASEDIR}" > /tmp/cmd.txt
   /usr/bin/echo "mkcol ${DIR}" >> /tmp/cmd.txt
   /usr/bin/echo "put /tmp/now.jpg ${FILE}" >> /tmp/cmd.txt
