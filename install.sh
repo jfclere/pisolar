@@ -1,5 +1,5 @@
 # install git and checkout the repo
-# sudo apt-get install git cadaver python-smbus
+# sudo apt-get install git cadaver
 # sudo raspi-config (activate camera and i2c)
 # copy and test the ssh keys
 # remove the password
