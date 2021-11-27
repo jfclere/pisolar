@@ -1,3 +1,9 @@
+# install git and checkout the repo
+# sudo apt-get install git
+# sudo raspi-config (activate camera and i2c)
+# copy and test the ssh keys
+# remove the password
+# sudo passwd -d pi
 sudo mkdir /var/log/journal
 sudo systemd-tmpfiles --create --prefix /var/log/journal
 sudo apt --autoremove purge rsyslog
