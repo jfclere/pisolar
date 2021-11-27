@@ -4,6 +4,12 @@
 # copy and test the ssh keys
 # remove the password
 # sudo passwd -d pi
+# create the ~/.netrc file with
+# machine MachineName
+# login UserName
+# password PassWord
+# the httpd.conf conf piece is /etc/httpd/conf.d/webdav.conf
+
 sudo mkdir /var/log/journal
 sudo systemd-tmpfiles --create --prefix /var/log/journal
 sudo apt --autoremove purge rsyslog
