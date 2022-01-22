@@ -7,17 +7,25 @@ do
   /usr/bin/ping -c 1 -W 10 jfclere.myddns.me
   if [ $? -ne 0 ]; then
     /usr/bin/sleep 60
+    /usr/bin/echo "Retrying ping jfclere.myddns.me"
+    /usr/bin/sync
   else
     break
   fi
   i=`/usr/bin/expr $i + 1`
 done
 if [ $i -eq 60 ]; then
+  /usr/bin/echo "ping jfclere.myddns.me failed stopping"
   # sleep 5 minutes and restart
   /home/pi/pisolar/wait.py 5
   if [ $? -ne 0 ]; then
+    /usr/bin/echo "FAILED: can't return in wait mode!!!"
+    /usr/bin/echo "Ping has failed"
+    /usr/bin/sync
     exit 0
   fi
+  /usr/bin/echo "Stopping poweroff"
+  /usr/bin/sync
   /usr/bin/sudo /usr/sbin/poweroff
 fi
 
@@ -37,6 +45,7 @@ fi
 if [ "${code}" == "200" ]; then
   # Do what is neeeded
   /usr/bin/echo "200: YES!!!"
+  /usr/bin/sync
   # tell arduino to wait 5 minutes and restart.
   high=`/home/pi/pisolar/wait.py 0`
   low=`/home/pi/pisolar/wait.py 1`
@@ -60,9 +69,13 @@ if [ "${code}" == "200" ]; then
   /home/pi/pisolar/wait.py 5
   if [ $? -ne 0 ]; then
     /usr/bin/echo "FAILED: can't return in wait mode!!!"
+    /usr/bin/sync
     exit 0
   fi
+  /usr/bin/echo "Stopping poweroff"
+  /usr/bin/sync
   /usr/bin/sudo /usr/sbin/poweroff
 else
     /usr/bin/echo "FAILED: code: ${code}!!!"
+    /usr/bin/sync
 fi
