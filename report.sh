@@ -7,13 +7,26 @@ if [ $? -ne 0 ]; then
   code=`/usr/bin/curl -o /dev/null --silent --head --write-out '%{http_code}' https://jfclere.myddns.me/~jfclere/report`
   if [ $? -ne 0 ]; then
     /usr/bin/echo "ERROR can't curl to server"
+    /usr/bin/sync
     /usr/bin/sudo /usr/sbin/reboot
     exit 0
   fi
 fi
 if [ "${code}" != "200" ]; then
   /usr/bin/echo "Not configured! $code"
+  /usr/bin/sync
   exit 0
+fi
+
+# make sure we have a time that makes sense
+#
+# Check the time
+/usr/bin/timedatectl status | /usr/bin/grep synchronized | /usr/bin/grep yes > /dev/null
+if [ $? -ne 0 ]; then
+  /usr/bin/sudo /usr/bin/systemctl restart systemd-timesyncd.service
+  /usr/bin/sleep 5
+  /usr/bin/echo "Time synchronized"
+  /usr/bin/sync
 fi
 
 # send the value (if working)
@@ -27,10 +40,12 @@ if [ $? -eq 0 ]; then
     /usr/bin/curl -o /dev/null --silent --head https://jfclere.myddns.me/~jfclere/report${val}
   else
     /usr/bin/echo "ERROR low"
+    /usr/bin/sync
     /usr/bin/sudo /usr/sbin/reboot
   fi
 else
   /usr/bin/echo "ERROR high"
+  /usr/bin/sync
   /usr/bin/sudo /usr/sbin/reboot
   exit 0
 fi
@@ -46,8 +61,10 @@ fi
 /home/pi/pisolar/wait.py 6
 if [ $? -ne 0 ]; then
   /usr/bin/echo "ERROR can't set waiting time"
+  /usr/bin/sync
   /usr/bin/sudo /usr/sbin/reboot
   exit 0
 fi
 /usr/bin/echo "Done success"
+/usr/bin/sync
 /usr/bin/sudo /usr/sbin/poweroff
