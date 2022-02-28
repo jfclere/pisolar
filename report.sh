@@ -30,21 +30,11 @@ if [ $? -ne 0 ]; then
 fi
 
 # send the value (if working)
-high=`/home/pi/pisolar/wait.py 0`
+val=`/home/pi/pisolar/readreg.py 0`
 if [ $? -eq 0 ]; then
-  low=`/home/pi/pisolar/wait.py 1`
-  if [ $? -eq 0 ]; then
-    val=`/usr/bin/expr $high \\* 256`
-    val=`/usr/bin/expr $val + $low`
-    #echo "$high:$low:$val"
-    /usr/bin/curl -o /dev/null --silent --head https://jfclere.myddns.me/~jfclere/report${val}
-  else
-    /usr/bin/echo "ERROR low"
-    /usr/bin/sync
-    /usr/bin/sudo /usr/sbin/reboot
-  fi
+  /usr/bin/curl -o /dev/null --silent --head https://jfclere.myddns.me/~jfclere/report${val}
 else
-  /usr/bin/echo "ERROR high"
+  /usr/bin/echo "ERROR readreg.py 0"
   /usr/bin/sync
   /usr/bin/sudo /usr/sbin/reboot
   exit 0
@@ -56,9 +46,20 @@ fi
 /usr/bin/echo "put /tmp/now.jpg now.jpg" > /tmp/cmd.txt
 /usr/bin/cadaver https://jfclere.myddns.me/webdav/ < /tmp/cmd.txt
 
+# send again the value (if working)
+val=`/home/pi/pisolar/readreg.py 0`
+if [ $? -eq 0 ]; then
+  /usr/bin/curl -o /dev/null --silent --head https://jfclere.myddns.me/~jfclere/report_2_${val}
+else
+  /usr/bin/echo "ERROR readreg.py 0"
+  /usr/bin/sync
+  /usr/bin/sudo /usr/sbin/reboot
+  exit 0
+fi
+
 #
 # sleep 6 minutes and restart
-/home/pi/pisolar/wait.py 6
+/home/pi/pisolar/writereg.py 6 360
 if [ $? -ne 0 ]; then
   /usr/bin/echo "ERROR can't set waiting time"
   /usr/bin/sync
