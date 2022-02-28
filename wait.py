@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Tell ATtiny to power off for a while.
 import sys
 import smbus
@@ -13,9 +13,12 @@ bus = smbus.SMBus(1) # Rev 2 Pi, Pi 2 & Pi 3 uses bus 1
                      # Rev 1 Pi uses bus 0
 def main():
     wait = int(sys.argv[1])
+    print(wait)
     bus.write_byte(DEVICE, wait)
     reply = bus.read_byte(DEVICE)
     print(reply)
+#    reply = bus.read_byte(DEVICE)
+#    print(reply)
 
 
 if __name__ == "__main__":

@@ -19,8 +19,6 @@ def main():
       bus.write_byte(DEVICE, wait)
       reply0 = int(bus.read_byte(DEVICE))
       reply1 = int(bus.read_byte(DEVICE))
-      print(reply0)
-      print(reply1)
       val = reply0 + (reply1 * 256)
       print(val)
     elif wait == 6 :
