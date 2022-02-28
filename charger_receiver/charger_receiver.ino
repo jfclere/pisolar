@@ -9,8 +9,6 @@
 #define SHUTDOWNTIME 30000UL
 #define WAITFACTOR 1000UL
 
-unsigned long stopfor = 0;
-int val = 0; // medium value
 int sum = 0; // sum
 int count = 0;
 int sending = 0; // to store val while sending it.
@@ -28,15 +26,24 @@ bool redon = false;
 bool ispion = false;
 bool start_conversion = true;
 // we have 3 states: auto, force on and force off.
-bool automode = true;
-bool forcebaton = false;
-bool forceusb = false;
+#define AUTO  0x01
+#define BATON 0x02
+#define USBON 0x04
 
 /* 3V according to divisor (1000+220)/220 = 5.5454 and ref = 1.1V */
 /* 505/1024*1.1*5.5454 = 3.0805 V */
 /* according to my testa until around 440 = 2.621 V the USB is stable */ 
 #define BATCHARGED 773 /* 700 seems to make 3.8V,  773 would be 4.2 */
 #define BATLOW 440 /* 2.626 too low compare to 3.0v/cell. */ 
+
+volatile byte reg_position;
+volatile uint8_t i2c_regs[15];
+/* We store there: val (current value), batlow, batchar, stopfor (8bytes) and testmode (1 byte) */
+unsigned short 	*batlow;
+unsigned short 	*batcharged;
+unsigned short 	*val; // medium value
+unsigned long *stopfor;
+
 void setup()
 {
   TinyWireS.begin(0x04);                // join i2c bus with address #4
@@ -44,6 +51,14 @@ void setup()
   TinyWireS.onRequest(requestEvent); // interrupt handler for when data is wanted
   pinMode(ledgreen, OUTPUT);
   pinMode(ledred, OUTPUT);
+  val = (unsigned short *) &i2c_regs[0];
+  batlow = (unsigned short *) &i2c_regs[2];
+  batcharged = (unsigned short *) &i2c_regs[4];
+  stopfor = (unsigned long *) &i2c_regs[6];
+  i2c_regs[14] = AUTO;
+  *batlow = BATLOW;
+  *batcharged = BATCHARGED;
+  *stopfor = 0;  
 }
 
 void loop()
@@ -62,12 +77,14 @@ void loop()
       sum = sum + curval;
       count++;
       if (count == 10) {
-        val = sum / 10;
+        *val = sum / 10;
         count = 0;
         sum = 0;
       }
+
+      volatile bool automode =  i2c_regs[14]&AUTO;
       if (automode) {
-        if (val<BATCHARGED) {
+        if (*val<batcharged) {
           digitalWrite(ledgreen, LOW);
         } else {
           digitalWrite(ledgreen, HIGH);
@@ -78,15 +95,15 @@ void loop()
   }
 
   /* do nothing until we don't know if we have enough battery */
-  if (!val)
+  if (!*val)
      return;
 
   /* Not enough battery and off do nothing */
-  if (val<BATLOW && !ispion)
+  if (*val<batlow && !ispion)
      return;
-
+  
   // stop and sleep.
-  if (stopfor) {
+  if (*stopfor != 0) {
     // We have just received a stop for the PI
     if (ispion) {
       delay(SHUTDOWNTIME); // give time to stop.
@@ -94,27 +111,32 @@ void loop()
       ispion = false;
     }
     delay(WAITFACTOR);
-    stopfor--;
+    *stopfor = *stopfor -1;
     return;
   }
 
-  // Otherwise just switch on.
-  if (!ispion) {
-    digitalWrite(ledred, HIGH); // enable 5 V USB
-    ispion = true;
-  }
-
   // Forced mode for debuggging the hardware!!!
+  volatile bool automode =  i2c_regs[14]&AUTO;
+  volatile bool forcebaton = i2c_regs[14]&BATON;
+  volatile bool forceusb = i2c_regs[14]&USBON;
   if (!automode) {
-    if (forcebaton){
+    if (forcebaton) {
       digitalWrite(ledgreen, LOW);
     } else {
       digitalWrite(ledgreen, HIGH);
     }
     if (forceusb) {
       digitalWrite(ledred, HIGH); // enable 5 V USB
+      ispion = true;
     } else {
       digitalWrite(ledred, LOW); // disable 5 V USB.
+      ispion = false;
+    }
+  } else {
+    // Otherwise just switch on.
+    if (!ispion) {
+      digitalWrite(ledred, HIGH); // enable 5 V USB
+      ispion = true;
     }
   }
 }
@@ -125,9 +147,22 @@ void receiveEvent(uint8_t howMany)
 {
   if (howMany < 1)
     return;
-  while(howMany--)
-  {
-    c = TinyWireS.receive(); // receive byte as a character
+  reg_position = TinyWireS.receive();
+  howMany--;
+  if (!howMany) {
+    // This write was only to set the buffer for next read
+    return;
+  }
+
+  while(howMany--) {
+    // i2c_regs[reg_position] =  (uint8_t volatile) TinyWireS.receive();
+    i2c_regs[reg_position] = TinyWireS.receive();
+    reg_position++;
+    if (reg_position >= sizeof(i2c_regs)-1) {
+      reg_position = 0;
+    }
+  }
+}
     // c = 0 : read high
     // c = 1 : read low and auto mode
     // c = 2 force bat on.
@@ -135,6 +170,7 @@ void receiveEvent(uint8_t howMany)
     // c = 4 force USB on.
     // c = 5 force USB off.
     // otherwise PI sleeps for c.
+    /* need to process the register somehow
     if (c == 1) {
       automode = true;
     } else if (c == 2) {
@@ -154,15 +190,15 @@ void receiveEvent(uint8_t howMany)
       automode = true;
       stopfor = c * 60;
     }
-  }
-}
+    */
+    
 void requestEvent ()
 {
-  // Send the low or high value
-  if (c) {
-    TinyWireS.send((uint8_t) (sending%256));
-  } else {
-    sending = val;
-    TinyWireS.send((uint8_t) (sending/256));
-  }
+  // Send the registers
+  TinyWireS.send(i2c_regs[reg_position]);
+  // Increment the reg position on each read, and loop back to zero
+  reg_position++;
+  if (reg_position >= sizeof(i2c_regs)) {
+        reg_position = 0;
+    }
 }
