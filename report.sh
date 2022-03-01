@@ -66,6 +66,12 @@ if [ $? -ne 0 ]; then
   /usr/bin/sudo /usr/sbin/reboot
   exit 0
 fi
+val=`/home/pi/pisolar/readreg.py 6`
+if [ $? -eq 0 ]; then
+  /usr/bin/echo "waiting for $val"
+else
+  /usr/bin/echo "ERROR readreg.py 6"
+fi
 /usr/bin/echo "Done success"
 /usr/bin/sync
 /usr/bin/sudo /usr/sbin/poweroff
