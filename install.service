@@ -1,0 +1,14 @@
+[Unit]
+Before=systemd-user-sessions.service
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=!/var/lib/installed
+
+[Service]
+Type=oneshot
+User=pi
+ExecStart=/home/pi/install.sh
+ExecStartPost=/usr/bin/touch /var/lib/installed
+
+[Install]
+WantedBy=multi-user.target
