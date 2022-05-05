@@ -8,7 +8,7 @@ ConditionPathExists=!/var/lib/installed
 Type=oneshot
 User=pi
 ExecStart=/home/pi/install.sh
-ExecStartPost=/usr/bin/touch /var/lib/installed
+ExecStartPost=/usr/bin/sudo /usr/bin/touch /var/lib/installed
 
 [Install]
 WantedBy=multi-user.target
