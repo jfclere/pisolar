@@ -12,7 +12,17 @@ if [ -z $ROOT_DIR ]; then
   exit 1
 fi
 touch $BOOT_DIR/ssh
-cp wpa_supplicant.conf $BOOT_DIR/
+if [ -f $HOME/wpa_supplicant.conf ]; then
+  cp $HOME/wpa_supplicant.conf $BOOT_DIR/
+else
+  echo "Missing $HOME/wpa_supplicant.conf"
+fi
+if [ -f $HOME/.netrc ]; then
+  sudo cp $HOME/.netrc $ROOT_DIR/home/pi
+  sudo chown 1000:1000 $ROOT_DIR/home/pi/.netrc
+else
+  echo "Missing $HOME/.netrc"
+fi
 
 # copy the ssh key
 sudo mkdir $ROOT_DIR/home/pi/.ssh
