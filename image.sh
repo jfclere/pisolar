@@ -94,7 +94,7 @@ if [ "${code}" == "200" ]; then
 
   # sleep 5 minutes and restart
   if $IS_SOLAR; then
-    wait_for=`/usr/bin/expr $WAIT_TIME * 60`
+    wait_for=`/usr/bin/expr $WAIT_TIME \\* 60`
     /home/pi/pisolar/writereg.py 6 $wait_for
     if [ $? -ne 0 ]; then
       /usr/bin/echo "FAILED: can't return in wait mode!!!"
