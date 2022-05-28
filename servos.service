@@ -1,0 +1,11 @@
+[Unit]
+Description=Servos service
+After=network.target
+
+[Service]
+Type=forking
+PIDFile=pigpio.pid
+ExecStart=/usr/bin/pigpiod
+
+[Install]
+WantedBy=multi-user.target
