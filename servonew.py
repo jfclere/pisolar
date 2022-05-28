@@ -1,5 +1,4 @@
-#!/usr/bin/python2
-# tested  Python 2.7.16
+#!/usr/bin/python3
 import RPi.GPIO as GPIO
 import time
 
@@ -8,25 +7,15 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(servoPIN, GPIO.OUT)
 
 p = GPIO.PWM(servoPIN, 50) # GPIO 14 for PWM with 50Hz
-p.start(2.5) # Initialization
+p.start(0) # Initialization
+i = 0
 try:
   while True:
-    p.ChangeDutyCycle(5)
-    time.sleep(0.5)
-    p.ChangeDutyCycle(7.5)
-    time.sleep(0.5)
-    p.ChangeDutyCycle(10)
-    time.sleep(0.5)
-    p.ChangeDutyCycle(12.5)
-    time.sleep(0.5)
-    p.ChangeDutyCycle(10)
-    time.sleep(0.5)
-    p.ChangeDutyCycle(7.5)
-    time.sleep(0.5)
-    p.ChangeDutyCycle(5)
-    time.sleep(0.5)
-    p.ChangeDutyCycle(2.5)
-    time.sleep(0.5)
+    p.ChangeDutyCycle(i)
+    i = i + 1
+    time.sleep(5)
+    if i == 100:
+       break
 except KeyboardInterrupt:
   p.stop()
   GPIO.cleanup()
