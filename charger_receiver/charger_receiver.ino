@@ -34,7 +34,7 @@ bool start_conversion = true;
 /* 505/1024*1.1*5.5454 = 3.0805 V */
 /* according to my testa until around 440 = 2.621 V the USB is stable */ 
 #define BATCHARGED 773 /* 700 seems to make 3.8V,  773 would be 4.2 */
-#define BATLOW 440 /* 2.626 too low compare to 3.0v/cell. */ 
+#define BATLOW 600 /* 440 : 2.626 too low compare to 3.0v/cell. */ 
 
 volatile byte reg_position;
 volatile uint8_t i2c_regs[15];
@@ -99,7 +99,7 @@ void loop()
      return;
 
   /* Not enough battery and off do nothing */
-  if (*val<batlow && !ispion)
+  if (*val<(unsigned long) batlow && !ispion)
      return;
   
   // stop and sleep.

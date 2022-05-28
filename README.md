@@ -43,3 +43,8 @@ passwd my_password
 # 3.3V to USB
 
 Use 5V USB BOOST 500 MA in docs/Newversion.pdf it is connect to the EN (Enable pin)
+
+# focus of the camera
+
+Use V2.1 with the manual focus tool.
+The V1.3 have the focus clued you need to break the clue to adjust the focus: remove the camera from the IC board, hold the lens with pliers and turn the camera anticlock wise until the clue cracks (be strong!), reassemble IC and camera, then ajust the focus with pliers gently. (I have used a piece of platic with a square hole to hold the camera).
