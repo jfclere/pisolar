@@ -120,6 +120,32 @@ if [ "${code}" == "200" ]; then
     /usr/bin/at -f /home/pi/pisolar/image.bash now + $WAIT_TIME minute
   fi
 else
-    /usr/bin/echo "FAILED: code: ${code}!!!"
+  /usr/bin/echo "FAILED: code: ${code}!!!"
+  /usr/bin/sync
+  if [ "${code}" == "404" ]; then
+    # No command file, maintenance mode
+    /usr/bin/echo "Entrying maintenace mode"
     /usr/bin/sync
+  else
+    # Something wrong on the server
+    val=`/home/pi/pisolar/readreg.py 0`
+    if [ $? -eq 0 ]; then
+      # wait 5 minutes
+      /home/pi/pisolar/writereg.py 6 300 
+      if [ $? -eq 0 ]; then
+        /usr/bin/echo "FAILED: can't return in wait mode!!!"
+        /usr/bin/sync
+        exit 0
+      else
+        /usr/bin/echo "Stopping poweroff"
+        /usr/bin/sync
+        /usr/bin/sudo /usr/sbin/poweroff
+      fi
+    else
+      # not solar just retry in a loop
+      /usr/bin/echo "Stopping reboot"
+      /usr/bin/sync
+      /usr/bin/sudo /usr/sbin/reboot
+    fi
+  fi
 fi
