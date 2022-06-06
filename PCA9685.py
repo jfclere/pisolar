@@ -82,6 +82,12 @@ class PCA9685:
     pulse = pulse*4096/20000        #PWM frequency is 50HZ,the period is 20000us
     self.setPWM(channel, 0, int(pulse))
 
+  def stop(self):
+    oldmode = self.read(self.__MODE1);
+    newmode = (oldmode & 0x7F) | 0x10        # sleep
+    self.write(self.__MODE1, newmode)        # go to sleep
+    # self.write(self.__MODE1, 0x00)
+
 if __name__=='__main__':
 
   hor = 1500
@@ -132,6 +138,7 @@ if __name__=='__main__':
   time.sleep(0.5)     
 
   # turning off servo
+  pwm.stop()
   #pwm.set_PWM_dutycycle(servoh, 0)
   #pwm.set_PWM_frequency( servoh, 0 )
 
