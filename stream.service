@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 User=pi
-ExecStart=/snap/bin/mjpg-streamer -i "input_uvc.so -n -f 30 -r 1280x720" -o "output_http.so -w ./www"
+ExecStart=/usr/local/bin/mjpg_streamer -i "input_uvc.so -n -f 30 -r 1280x720" -o "output_http.so -w ./www"
 WorkingDirectory=/home/pi/pisolar
 StandardOutput=inherit
 StandardError=inherit
