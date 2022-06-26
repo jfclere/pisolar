@@ -51,6 +51,8 @@ void setup()
   TinyWireS.onRequest(requestEvent); // interrupt handler for when data is wanted
   pinMode(ledgreen, OUTPUT);
   pinMode(ledred, OUTPUT);
+  digitalWrite(ledred, LOW); // disable 5 V USB.
+  digitalWrite(ledgreen, LOW); // charge battery
   val = (unsigned short *) &i2c_regs[0];
   batlow = (unsigned short *) &i2c_regs[2];
   batcharged = (unsigned short *) &i2c_regs[4];
