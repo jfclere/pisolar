@@ -4,6 +4,7 @@
 sudo apt-get update
 sudo apt-get -y install git cadaver libcamera-apps python3-smbus at
 # checkout the repo
+cd /home/pi
 git clone https://github.com/jfclere/pisolar.git
 # sudo raspi-config (activate camera and i2c)
 # copy and test the ssh keys
