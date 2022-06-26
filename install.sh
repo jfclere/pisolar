@@ -18,9 +18,9 @@ git clone https://github.com/jfclere/pisolar.git
 
 sudo passwd -d pi
 
-# not working? :-(
-#sudo /usr/bin/raspi-config nonint do_camera 1
-#sudo /usr/bin/raspi-config nonint do_i2c 1
+# legacy camera and i2c
+sudo /usr/bin/raspi-config nonint do_legacy 0
+sudo /usr/bin/raspi-config nonint do_i2c 0
 
 sudo mkdir /var/log/journal
 sudo systemd-tmpfiles --create --prefix /var/log/journal
