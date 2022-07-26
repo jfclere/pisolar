@@ -34,6 +34,14 @@ result = cv2.bitwise_and(result, result, mask=full_mask)
 #cv2.imshow('result', result)
 
 cv2.imwrite('savedImage.jpg', result)
+
+# try to find a polygone in the image
+result = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
+im2, contours, hierarchy = cv2.findContours(result, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+for contour in contours:
+    cv2.drawContours(image, contour, -1, (0,255,0), 3)
+cv2.imwrite('processedImage.jpg', image)
+
  
 #cv2.waitKey(0)
 #cv2.destroyAllWindows()
