@@ -51,7 +51,7 @@ The V1.3 have the focus clued you need to break the clue to adjust the focus: re
 
 # Making the raspberry an object
 
-The raspberry is preinstalled using data from your $HOME laptop:
+The raspberry is preinstalled (bash preinstall.sh) using data from your $HOME laptop:
 
 ## $HOME/.netrc file
 Contains the information for cadaver (WebDAV client)
