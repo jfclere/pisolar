@@ -48,3 +48,70 @@ Use 5V USB BOOST 500 MA in docs/Newversion.pdf it is connect to the EN (Enable p
 
 Use V2.1 with the manual focus tool.
 The V1.3 have the focus clued you need to break the clue to adjust the focus: remove the camera from the IC board, hold the lens with pliers and turn the camera anticlock wise until the clue cracks (be strong!), reassemble IC and camera, then ajust the focus with pliers gently. (I have used a piece of platic with a square hole to hold the camera).
+
+# Making the raspberry an object
+
+The raspberry is preinstalled using data from your $HOME laptop:
+
+## $HOME/.netrc file
+Contains the information for cadaver (WebDAV client)
+```
+machine myserver.myddns.me
+login httpduser
+password httpdpasswd
+```
+The server myserver.myddns.me uses httpd with mod_dav (/etc/httpd/conf.d/webdav.conf)
+```
+<IfModule mod_dav_fs.c>
+    DAVLockDB /var/lib/dav/lockdb
+</IfModule>
+Alias /webdav /home/webdav
+<Directory /home/webdav>
+    Require all granted
+    DAV On
+    AuthType Basic
+    AuthName WebDAV
+    AuthUserFile /etc/httpd/conf/.htpasswd
+    <LimitExcept GET POST OPTIONS>
+        Require valid-user
+    </LimitExcept>
+    Options Indexes
+    IndexOptions +FancyIndexing -FoldersFirst 
+    IndexOrderDefault Descending Name
+</Directory>
+```
+The user "httpduser" is created in the server myserver.myddns.me via htpasswd
+
+## $HOME/wpa_supplicant.conf file
+Contains the wifi information:
+```
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+country=CH
+network={
+  ssid="3307X0354"
+  psk="jfc_secret_password"
+  key_mgmt=WPA-PSK
+}
+```
+
+## $HOME/machine-id
+That is a unique id for the raspberry you are installing, it corresponds to a file in the server "myserver.myddns.me"
+```
+[jfclere@localhost public_html]$ more 68fa56d97f7c4ad18b377cc5780ee614
+pi0neuchatel
+10
+600
+```
+The file $HOME/machine-id contains 68fa56d97f7c4ad18b377cc5780ee614.
+The images from the camera will be saved under /home/webdav/pi0neuchatel
+An image will be taken around every 10 minutes
+And the raspberry won't be started if the battery voltage is lower than (600/167.57 ~ 3.58 Volt).
+
+## $HOME/.ssh/id_rsa.pub
+That allows you to ssh to the raspberry while it is up, to keep it up from ever move or remove the raspberry id file in the server "myserver.myddns.me"
+```
+mv $HOME/public_html/68fa56d97f7c4ad18b377cc5780ee614 $HOME/public_html/68fa56d97f7c4ad18b377cc5780ee614.save
+```
+
+
