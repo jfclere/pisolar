@@ -103,12 +103,12 @@ if [ "${code}" == "200" ]; then
     fi
     bat_low=`/home/pi/pisolar/readreg.py 2`
     if [ $? -eq 0 ]; then
-      if [ $bat_low -ne $BAD_LOW ]; then
-        /usr/bin/echo "Set bat_low $BAD_LOW (had: $bat_low)"
+      if [ $bat_low -ne $BAT_LOW ]; then
+        /usr/bin/echo "Set bat_low $BAT_LOW (had: $bat_low)"
         /usr/bin/sync
         /home/pi/pisolar/writereg.py 2 $BAT_LOW
         if [ $? -eq 0 ]; then
-          /usr/bin/echo "Set bat_low $BAD_LOW (had: $bat_low) FAILED"
+          /usr/bin/echo "Set bat_low $BAT_LOW (had: $bat_low) FAILED"
           /usr/bin/sync
         fi 
       fi
