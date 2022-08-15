@@ -23,6 +23,11 @@ if [ -f $HOME/.netrc ]; then
 else
   echo "Missing $HOME/.netrc"
 fi
+if [ -f $HOME/machine-id ]; then
+  sudo cp $HOME/machine-id $ROOT_DIR/etc
+else
+  echo "Missing $HOME/machine-id"
+fi
 
 # copy the ssh key
 sudo mkdir $ROOT_DIR/home/pi/.ssh
