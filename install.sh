@@ -18,8 +18,9 @@ git clone https://github.com/jfclere/pisolar.git
 
 sudo passwd -d pi
 
-# legacy camera and i2c
-sudo /usr/bin/raspi-config nonint do_legacy 0
+# legacy camera
+# sudo /usr/bin/raspi-config nonint do_legacy 0
+# i2c
 sudo /usr/bin/raspi-config nonint do_i2c 0
 
 sudo mkdir /var/log/journal

@@ -75,8 +75,9 @@ if [ "${code}" == "200" ]; then
   DIR=`/usr/bin/dirname ${FILE}`
   BASEDIR=`/usr/bin/dirname ${DIR}`
   /usr/bin/echo "${FILE} ${DIR} ${BASEDIR}"
-  # /usr/bin/libcamera-still -o /tmp/now.jpg
-  /usr/bin/raspistill -o /tmp/now.jpg
+  # For old raspbian version (before bullseye)
+  # /usr/bin/raspistill -o /tmp/now.jpg
+  /usr/bin/libcamera-still -o /tmp/now.jpg
   if [ $? -eq 0 ]; then
     /usr/bin/echo "mkcol ${REMOTE_DIR}" > /tmp/cmd.txt
     /usr/bin/echo "mkcol ${REMOTE_DIR}/${BASEDIR}" >> /tmp/cmd.txt
