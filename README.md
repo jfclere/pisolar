@@ -115,8 +115,9 @@ network={
 
 ## $HOME/machine-id
 That is a unique id for the raspberry you are installing, it corresponds to a file in the server "myserver.myddns.me"
-```
-[jfclere@localhost machines]$ more 68fa56d97f7c4ad18b377cc5780ee614
+The files need to be accessible, test it with curl for example:
+```bash
+curl myserver.myddns.me/machines/68fa56d97f7c4ad18b377cc5780ee614
 pi0neuchatel
 10
 600
@@ -127,7 +128,9 @@ An image will be taken around every 10 minutes
 And the raspberry won't be started if the battery voltage is lower than (600/167.57 ~ 3.58 Volt).
 
 ## $HOME/.ssh/id_rsa.pub
-That allows you to ssh to the raspberry while it is up, to keep it up from ever move or remove the raspberry id file in the server "myserver.myddns.me"
+That allows you to ssh to the raspberry while it is up.
+
+To keep the raspberry up for ever: move or remove the raspberry id file in the server "myserver.myddns.me"
 ```
 mv /var/www/html/machines/68fa56d97f7c4ad18b377cc5780ee614 /var/www/html/machines/68fa56d97f7c4ad18b377cc5780ee614.save
 ```
