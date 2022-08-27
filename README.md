@@ -1,16 +1,34 @@
 # pisolar
 software for ATTiny45 to power off the PI and power on after a while, the PI use I2C to start the power off/power on cycle.
 Look to: https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c to install the software on PI.
-```bash
-sudo apt install cadaver
-sudo apt install python-smbus
-```
 
-# install the service
+# install arduino IDE on your laptop to build the ATTiny software.
+See https://docs.arduino.cc/software/ide-v1/tutorials/Linux
+
+# prepare the SDcard for the PI:
+In the laptop make sure the SDcard is not mounted and copy the image.
 ```bash
-cp solar.service /etc/systemd/system/
-systemctl enable solar
+dd bs=4M if=2022-04-04-raspios-bullseye-armhf-lite.img of=/dev/mmcblk0 conv=fsync
 ```
+remove and reinsert the SDcard in the laptop (it will mount automatically otherwise mount boot and root by hands).
+create the following files:
+```
+$HOME/wpa_supplicant.conf
+$HOME/.netrc
+$HOME/machine-id
+```
+make sure the $HOME/.ssh/id_rsa.pub contains you public ssh key.
+run the preinstall script, the script assumes you have sudo permissions.
+```bash
+pisolar/preinstall.sh
+```
+The preinstall install a service that will install all you need in PI the first time you boot it.
+Make sure you unmount boot and root before removing the SDcard.
+
+# Boot the PI with the SDcard
+The install.sh script will run, be patient, make sure to keep the PI connected to the power.
+If all works you should be able to ping the PI after a while and later to ssh to it.
+
 # connect the PI I2C to the ATTiny I2C (Pin 5 and 7)
 
 # connect the ATTiny output(Pin 6)to IN(1) of the relay board.
