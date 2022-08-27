@@ -10,15 +10,16 @@
 # read machine-id and check for tmp file if we have not reboot we are probably on AC power device.
 MACHINE_ID=`/usr/bin/cat /etc/machine-id`
 IS_SOLAR=true
+SERVER=`/usr/bin/grep machine $HOME/.netrc | awk ' { print $2 } '`
 
 # check for the server (for one hour for the moment)
 i=0
 while [ $i -lt 60 ]
 do
-  /usr/bin/ping -c 1 -W 10 jfclere.myddns.me
+  /usr/bin/ping -c 1 -W 10 ${SERVER}
   if [ $? -ne 0 ]; then
     /usr/bin/sleep 60
-    /usr/bin/echo "Retrying ping jfclere.myddns.me"
+    /usr/bin/echo "Retrying ping ${SERVER}"
     /usr/bin/sync
   else
     break
@@ -26,7 +27,7 @@ do
   i=`/usr/bin/expr $i + 1`
 done
 if [ $i -eq 60 ]; then
-  /usr/bin/echo "ping jfclere.myddns.me failed stopping"
+  /usr/bin/echo "ping ${SERVER} failed stopping"
   # sleep 5 minutes and restart
   /home/pi/pisolar/writereg.py 6 300
   if [ $? -ne 0 ]; then
@@ -48,10 +49,10 @@ if [ $? -ne 0 ]; then
   /usr/bin/sleep 5
 fi
 
-code=`/usr/bin/curl -o /tmp/${MACHINE_ID} --silent --write-out '%{http_code}' https://jfclere.myddns.me/~jfclere/${MACHINE_ID}`
+code=`/usr/bin/curl -o /tmp/${MACHINE_ID} --silent --write-out '%{http_code}' https://${SERVER}/machines/${MACHINE_ID}`
 if [ $? -ne 0 ]; then
   # just retry
-  code=`/usr/bin/curl -o /tmp/${MACHINE_ID} --silent --write-out '%{http_code}' https://jfclere.myddns.me/~jfclere/${MACHINE_ID}`
+  code=`/usr/bin/curl -o /tmp/${MACHINE_ID} --silent --write-out '%{http_code}' https://${SERVER}/machines/${MACHINE_ID}`
 fi
 if [ "${code}" == "200" ]; then
   # Read the values from the received file.
@@ -63,7 +64,7 @@ if [ "${code}" == "200" ]; then
   # read bat volts via i2c
   val=`/home/pi/pisolar/readreg.py 0`
   if [ $? -eq 0 ]; then
-    /usr/bin/curl -o /dev/null --silent --head https://jfclere.myddns.me/~jfclere/report-${MACHINE_ID}-${val}
+    /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${val}
   else
     IS_SOLAR=false
     /usr/bin/echo "ERROR readreg.py 0"
@@ -87,7 +88,7 @@ if [ "${code}" == "200" ]; then
     if [ $? -eq 0 ]; then
       /usr/bin/echo "put /tmp/temp.txt ${REMOTE_DIR}/temp.txt" >> /tmp/cmd.txt
     fi
-    /usr/bin/cadaver https://jfclere.myddns.me/webdav/ < /tmp/cmd.txt
+    /usr/bin/cadaver https://${SERVER}/webdav/ < /tmp/cmd.txt
   else
     /usr/bin/echo "Can't read image"
     /usr/bin/sync
