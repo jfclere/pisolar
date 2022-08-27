@@ -11,7 +11,7 @@ In the laptop make sure the SDcard is not mounted and copy the image.
 dd bs=4M if=2022-04-04-raspios-bullseye-armhf-lite.img of=/dev/mmcblk0 conv=fsync
 ```
 remove and reinsert the SDcard in the laptop (it will mount automatically otherwise mount boot and root by hands).
-create the following files:
+create the following files (See https://github.com/jfclere/pisolar#making-the-raspberry-an-object):
 ```
 $HOME/wpa_supplicant.conf
 $HOME/.netrc
