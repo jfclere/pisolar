@@ -6,10 +6,25 @@ import cv2
 import os
 from picamera2 import Picamera2
 import time
-import smbus
-bus = smbus.SMBus(0)
+import v4l2
+import fcntl
+import errno
+# JFC import smbus
+# JFC bus = smbus.SMBus(0)
+
+fd = open("/dev/v4l-subdev1", 'r')
+FOCUS_ID = 0x009a090a
+
+def set_ctrl(vd, id, value):
+    ctrl = v4l2.v4l2_control()
+    ctrl.id = id
+    ctrl.value = value
+    try:
+        fcntl.ioctl(vd, v4l2.VIDIOC_S_CTRL, ctrl)
+    except IOError as e:
+        print(e)
 	
-def focusing(val):
+def focusingi2c(val):
 	value = (val << 4) & 0x3ff0
 	data1 = (value >> 8) & 0x3f
 	data2 = value & 0xf0
@@ -18,6 +33,9 @@ def focusing(val):
         # bus.write_byte_data(0x0c,data1,data2)
 	print("i2cset -y 22 0x0c %d %d" % (data1,data2))
 	os.system("i2cset -y 22 0x0c %d %d" % (data1,data2))
+def focusing(val):
+	print("focus value: {}".format(val))
+	set_ctrl(fd, FOCUS_ID, val)	
 	
 def sobel(img):
 	img_gray = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
@@ -86,7 +104,8 @@ if __name__ == "__main__":
 	max_value = 0.0
 	last_value = 0.0
 	dec_count = 0
-	focal_distance = 10
+	# focal_distance = 10
+	focal_distance = 800
 
 
         
