@@ -116,7 +116,7 @@ network={
 ## $HOME/machine-id
 That is a unique id for the raspberry you are installing, it corresponds to a file in the server "myserver.myddns.me"
 ```
-[jfclere@localhost public_html]$ more 68fa56d97f7c4ad18b377cc5780ee614
+[jfclere@localhost machines]$ more 68fa56d97f7c4ad18b377cc5780ee614
 pi0neuchatel
 10
 600
@@ -129,7 +129,8 @@ And the raspberry won't be started if the battery voltage is lower than (600/167
 ## $HOME/.ssh/id_rsa.pub
 That allows you to ssh to the raspberry while it is up, to keep it up from ever move or remove the raspberry id file in the server "myserver.myddns.me"
 ```
-mv $HOME/public_html/68fa56d97f7c4ad18b377cc5780ee614 $HOME/public_html/68fa56d97f7c4ad18b377cc5780ee614.save
+mv /var/www/html/machines/68fa56d97f7c4ad18b377cc5780ee614 /var/www/html/machines/68fa56d97f7c4ad18b377cc5780ee614.save
 ```
+Note that /var/www/html is the fedora location, sudo mkdir /var/www/html/machines to create, ajust the permissions if needed.
 
 
