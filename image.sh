@@ -29,7 +29,7 @@ done
 if [ $i -eq 60 ]; then
   /usr/bin/echo "ping ${SERVER} failed stopping"
   # sleep 5 minutes and restart
-  /home/pi/pisolar/writereg.py 6 300
+  /home/pi/pisolar/writereg.py 8 300
   if [ $? -ne 0 ]; then
     /usr/bin/echo "FAILED: can't return in wait mode!!!"
     /usr/bin/echo "Ping has failed"
@@ -64,6 +64,9 @@ if [ "${code}" == "200" ]; then
   # read bat volts via i2c
   val=`/home/pi/pisolar/readreg.py 0`
   if [ $? -eq 0 ]; then
+    # the oldval is the bat volts at the time the ATtiny45 switched the USB on
+    oldval=`/home/pi/pisolar/readreg.py 6`
+    /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/reportold-${MACHINE_ID}-${oldval}
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${val}
   else
     IS_SOLAR=false
@@ -97,7 +100,7 @@ if [ "${code}" == "200" ]; then
   # sleep 5 minutes and restart
   if $IS_SOLAR; then
     wait_for=`/usr/bin/expr $WAIT_TIME \\* 60`
-    /home/pi/pisolar/writereg.py 6 $wait_for
+    /home/pi/pisolar/writereg.py 8 $wait_for
     if [ $? -ne 0 ]; then
       /usr/bin/echo "FAILED: can't return in wait mode!!!"
       /usr/bin/sync
@@ -133,7 +136,7 @@ else
     val=`/home/pi/pisolar/readreg.py 0`
     if [ $? -eq 0 ]; then
       # wait 5 minutes
-      /home/pi/pisolar/writereg.py 6 300 
+      /home/pi/pisolar/writereg.py 8 300 
       if [ $? -eq 0 ]; then
         /usr/bin/echo "FAILED: can't return in wait mode!!!"
         /usr/bin/sync

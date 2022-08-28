@@ -37,12 +37,16 @@ bool start_conversion = true;
 #define BATLOW 600 /* 440 : 2.626 too low compare to 3.0v/cell. */ 
 
 volatile byte reg_position;
-volatile uint8_t i2c_regs[15];
-/* We store there: val (current value), batlow, batchar, stopfor (8bytes) and testmode (1 byte) */
+volatile uint8_t i2c_regs[17];
+/* We store there: val (current value), batlow, batchar, valstart, stopfor (8bytes) and testmode (1 byte) */
 unsigned short 	*batlow;
 unsigned short 	*batcharged;
 unsigned short 	*val; // medium value
+unsigned short  *valstart; // value when the PI has been switched on
 unsigned long *stopfor;
+
+#define TESTMODEOFFSET 16
+
 
 void setup()
 {
@@ -56,8 +60,9 @@ void setup()
   val = (unsigned short *) &i2c_regs[0];
   batlow = (unsigned short *) &i2c_regs[2];
   batcharged = (unsigned short *) &i2c_regs[4];
-  stopfor = (unsigned long *) &i2c_regs[6];
-  i2c_regs[14] = AUTO;
+  valstart = (unsigned short *) &i2c_regs[6];
+  stopfor = (unsigned long *) &i2c_regs[8];
+  i2c_regs[TESTMODEOFFSET] = AUTO;
   *batlow = BATLOW;
   *batcharged = BATCHARGED;
   *stopfor = 0;  
@@ -84,7 +89,7 @@ void loop()
         sum = 0;
       }
 
-      volatile bool automode =  i2c_regs[14]&AUTO;
+      volatile bool automode =  i2c_regs[TESTMODEOFFSET]&AUTO;
       if (automode) {
         if (*val<batcharged) {
           digitalWrite(ledgreen, LOW);
@@ -101,7 +106,7 @@ void loop()
      return;
 
   /* Not enough battery and off do nothing */
-  if (*val<(unsigned long) batlow && !ispion)
+  if (*val< batlow && !ispion)
      return;
   
   // stop and sleep.
@@ -118,9 +123,9 @@ void loop()
   }
 
   // Forced mode for debuggging the hardware!!!
-  volatile bool automode =  i2c_regs[14]&AUTO;
-  volatile bool forcebaton = i2c_regs[14]&BATON;
-  volatile bool forceusb = i2c_regs[14]&USBON;
+  volatile bool automode =  i2c_regs[TESTMODEOFFSET]&AUTO;
+  volatile bool forcebaton = i2c_regs[TESTMODEOFFSET]&BATON;
+  volatile bool forceusb = i2c_regs[TESTMODEOFFSET]&USBON;
   if (!automode) {
     if (forcebaton) {
       digitalWrite(ledgreen, LOW);
@@ -137,6 +142,7 @@ void loop()
   } else {
     // Otherwise just switch on.
     if (!ispion) {
+      valstart = val;
       digitalWrite(ledred, HIGH); // enable 5 V USB
       ispion = true;
     }

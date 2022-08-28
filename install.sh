@@ -23,6 +23,11 @@ sudo passwd -d pi
 # i2c
 sudo /usr/bin/raspi-config nonint do_i2c 0
 
+#
+# Remove broken DST_Root_CA_X3.crt
+sudo sed -i '/DST_Root_CA_X3.crt/d' /etc/ca-certificates.conf
+sudo /usr/sbin/update-ca-certificates
+
 sudo mkdir /var/log/journal
 sudo systemd-tmpfiles --create --prefix /var/log/journal
 sudo apt -y --autoremove purge rsyslog
