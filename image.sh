@@ -10,7 +10,8 @@
 # read machine-id and check for tmp file if we have not reboot we are probably on AC power device.
 MACHINE_ID=`/usr/bin/cat /etc/machine-id`
 IS_SOLAR=true
-SERVER=`/usr/bin/grep machine $HOME/.netrc | awk ' { print $2 } '`
+SERVER=`/usr/bin/grep machine $HOME/.netrc | /usr/bin/awk ' { print $2 } '`
+UPDATE_READY=false
 
 # check for the server (for one hour for the moment)
 i=0
@@ -59,8 +60,9 @@ if [ "${code}" == "200" ]; then
   /usr/bin/echo "200: YES!!!"
   /usr/bin/sync
   REMOTE_DIR=`/usr/bin/head -n 1 /tmp/${MACHINE_ID}`
-  WAIT_TIME=`/usr/bin/tail -n 2 /tmp/${MACHINE_ID}| /usr/bin/head -n 1`
-  BAT_LOW=`/usr/bin/tail -n 1 /tmp/${MACHINE_ID}`
+  WAIT_TIME=`/usr/bin/head -n 2 /tmp/${MACHINE_ID}| /usr/bin/tail -n 1`
+  BAT_LOW=`/usr/bin/head -n 3 /tmp/${MACHINE_ID}| /usr/bin/tail -n 1`
+  GIT_VERSION=`/usr/bin/head -n 4 /tmp/${MACHINE_ID} | /usr/bin/tail -n 1`
   # read bat volts via i2c
   val=`/home/pi/pisolar/readreg.py 0`
   if [ $? -eq 0 ]; then
@@ -97,6 +99,23 @@ if [ "${code}" == "200" ]; then
     /usr/bin/sync
   fi
 
+  # chech if we need to upgrade
+  GIT_CUR=`/usr/bin/git log -1 --oneline | /usr/bin/awk ' { print $1 } '`
+  if [ "$GIT_CUR" != "$GIT_VER" ]; then
+    /usr/bin/rm -rf /home/pi/pisolar.new
+    /usr/bin/cp -rp /home/pi/pisolar /home/pi/pisolar.new
+    cd /home/pi/pisolar.new
+    /usr/bin/git pull
+    /usr/bin/git reset --hard $GIT_VER
+    cd /home/pi/
+    GIT_NEW=`/usr/bin/git log -1 --oneline | /usr/bin/awk ' { print $1 } '`
+    if ["$GIT_CUR" == "$GIT_VER" ]; then
+      /usr/bin/echo "Updated to $GIT_CUR"
+      /usr/bin/sync
+      UPDATE_READY=true
+    fi
+  fi 
+
   # sleep 5 minutes and restart
   if $IS_SOLAR; then
     wait_for=`/usr/bin/expr $WAIT_TIME \\* 60`
@@ -118,10 +137,19 @@ if [ "${code}" == "200" ]; then
         fi 
       fi
     fi
+    if $UPDATE_READY; then
+      /usr/bin/mv /home/pi/pisolar /home/pi/pisolar.${GIT_CUR}
+      /usr/bin/mv /home/pi/pisolar.new /home/pi/pisolar
+    fi
     /usr/bin/echo "Stopping poweroff"
     /usr/bin/sync
     /usr/bin/sudo /usr/sbin/poweroff
   else
+    if $UPDATE_READY; then
+      /usr/bin/mv /home/pi/pisolar /home/pi/pisolar.${GIT_CUR}
+      /usr/bin/mv /home/pi/pisolar.new /home/pi/pisolar
+      /usr/bin/sync
+    fi
     /usr/bin/at -f /home/pi/pisolar/image.bash now + $WAIT_TIME minute
   fi
 else
