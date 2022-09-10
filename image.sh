@@ -100,7 +100,7 @@ if [ "${code}" == "200" ]; then
   fi
 
   # chech if we need to upgrade
-  GIT_CUR=`/usr/bin/git log -1 --oneline | /usr/bin/awk ' { print $1 } '`
+  GIT_CUR=`cd /home/pi/pisolar; /usr/bin/git log -1 --oneline | /usr/bin/awk ' { print $1 } '`
   if [ "$GIT_CUR" != "$GIT_VER" ]; then
     /usr/bin/rm -rf /home/pi/pisolar.new
     /usr/bin/cp -rp /home/pi/pisolar /home/pi/pisolar.new
@@ -108,9 +108,9 @@ if [ "${code}" == "200" ]; then
     /usr/bin/git pull
     /usr/bin/git reset --hard $GIT_VER
     cd /home/pi/
-    GIT_NEW=`/usr/bin/git log -1 --oneline | /usr/bin/awk ' { print $1 } '`
-    if ["$GIT_CUR" == "$GIT_VER" ]; then
-      /usr/bin/echo "Updated to $GIT_CUR"
+    GIT_NEW=`cd /home/pi/pisolar.new; /usr/bin/git log -1 --oneline | /usr/bin/awk ' { print $1 } '`
+    if ["$GIT_CUR" == "$GIT_NEW" ]; then
+      /usr/bin/echo "Updated to $GIT_NEW"
       /usr/bin/sync
       UPDATE_READY=true
     fi
