@@ -62,7 +62,7 @@ if [ "${code}" == "200" ]; then
   REMOTE_DIR=`/usr/bin/head -n 1 /tmp/${MACHINE_ID}`
   WAIT_TIME=`/usr/bin/head -n 2 /tmp/${MACHINE_ID}| /usr/bin/tail -n 1`
   BAT_LOW=`/usr/bin/head -n 3 /tmp/${MACHINE_ID}| /usr/bin/tail -n 1`
-  GIT_VERSION=`/usr/bin/head -n 4 /tmp/${MACHINE_ID} | /usr/bin/tail -n 1`
+  GIT_VER=`/usr/bin/head -n 4 /tmp/${MACHINE_ID} | /usr/bin/tail -n 1`
   # read bat volts via i2c
   val=`/home/pi/pisolar/readreg.py 0`
   if [ $? -eq 0 ]; then
@@ -138,6 +138,7 @@ if [ "${code}" == "200" ]; then
       fi
     fi
     if $UPDATE_READY; then
+      /usr/bin/rm -rf /home/pi/pisolar.${GIT_CUR}
       /usr/bin/mv /home/pi/pisolar /home/pi/pisolar.${GIT_CUR}
       /usr/bin/mv /home/pi/pisolar.new /home/pi/pisolar
     fi
@@ -146,6 +147,7 @@ if [ "${code}" == "200" ]; then
     /usr/bin/sudo /usr/sbin/poweroff
   else
     if $UPDATE_READY; then
+      /usr/bin/rm -rf /home/pi/pisolar.${GIT_CUR}
       /usr/bin/mv /home/pi/pisolar /home/pi/pisolar.${GIT_CUR}
       /usr/bin/mv /home/pi/pisolar.new /home/pi/pisolar
       /usr/bin/sync
