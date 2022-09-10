@@ -110,6 +110,7 @@ if [ "${code}" == "200" ]; then
     cd /home/pi/
     GIT_NEW=`cd /home/pi/pisolar.new; /usr/bin/git log -1 --oneline | /usr/bin/awk ' { print $1 } '`
     if [ "$GIT_VER" == "$GIT_NEW" ]; then
+      # we have the new version checked out in /home/pi/pisolar.new
       /usr/bin/echo "Will to update to $GIT_NEW"
       /usr/bin/sync
       UPDATE_READY=true
