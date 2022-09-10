@@ -110,7 +110,7 @@ if [ "${code}" == "200" ]; then
     cd /home/pi/
     GIT_NEW=`cd /home/pi/pisolar.new; /usr/bin/git log -1 --oneline | /usr/bin/awk ' { print $1 } '`
     if [ "$GIT_CUR" == "$GIT_NEW" ]; then
-      /usr/bin/echo "Updated to $GIT_NEW"
+      /usr/bin/echo "Will to update to $GIT_NEW"
       /usr/bin/sync
       UPDATE_READY=true
     fi
@@ -138,6 +138,7 @@ if [ "${code}" == "200" ]; then
       fi
     fi
     if $UPDATE_READY; then
+      /usr/bin/echo "Updated to $GIT_NEW"
       /usr/bin/rm -rf /home/pi/pisolar.${GIT_CUR}
       /usr/bin/mv /home/pi/pisolar /home/pi/pisolar.${GIT_CUR}
       /usr/bin/mv /home/pi/pisolar.new /home/pi/pisolar
@@ -147,6 +148,7 @@ if [ "${code}" == "200" ]; then
     /usr/bin/sudo /usr/sbin/poweroff
   else
     if $UPDATE_READY; then
+      /usr/bin/echo "Updated to $GIT_NEW"
       /usr/bin/rm -rf /home/pi/pisolar.${GIT_CUR}
       /usr/bin/mv /home/pi/pisolar /home/pi/pisolar.${GIT_CUR}
       /usr/bin/mv /home/pi/pisolar.new /home/pi/pisolar
