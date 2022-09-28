@@ -104,8 +104,8 @@ if __name__ == "__main__":
 	max_value = 0.0
 	last_value = 0.0
 	dec_count = 0
-	focal_distance = 10
-	# focal_distance = 300
+	# focal_distance = 10
+	focal_distance = 700
 	focusing(focal_distance)
 	time.sleep(1)
 
@@ -130,7 +130,8 @@ if __name__ == "__main__":
 		last_value = val
 		
 		#Increase the focal distance
-		focal_distance += 15
+		# focal_distance += 15
+		focal_distance += 25
 		if focal_distance > 1000:
 			break
 

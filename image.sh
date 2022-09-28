@@ -81,6 +81,11 @@ if [ "${code}" == "200" ]; then
   DIR=`/usr/bin/dirname ${FILE}`
   BASEDIR=`/usr/bin/dirname ${DIR}`
   /usr/bin/echo "${FILE} ${DIR} ${BASEDIR}"
+  /usr/bin/dmesg | /usr/bin/grep imx519
+  if [ $? -eq 0 ]; then
+    # we have autofocus camera
+    /home/pi/pisolar/Autofocus.py
+  fi
   # For old raspbian version (before bullseye)
   # /usr/bin/raspistill -o /tmp/now.jpg
   /usr/bin/libcamera-still -o /tmp/now.jpg
