@@ -29,7 +29,7 @@ while i < 11:
   r = requests.get('https://www.apache.org')
   if (r.status_code == 200):
     GPIO.output(13,GPIO.HIGH)
-  r = requests.get('https://' + machinename + '/machines/' + machine_id + '.ok')
+  r = requests.get('https://' + machinename + '/machines/' + machine_id)
   # print('https://' + machinename + '/machines/' + machine_id + '.ok')
   if (r.status_code == 200):
     GPIO.output(19,GPIO.HIGH)

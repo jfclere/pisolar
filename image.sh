@@ -160,7 +160,7 @@ if [ "${code}" == "200" ]; then
       /usr/bin/mv /home/pi/pisolar.new /home/pi/pisolar
       /usr/bin/sync
     fi
-    /usr/bin/at -f /home/pi/pisolar/image.bash now + $WAIT_TIME minute
+    #/usr/bin/at -f /home/pi/pisolar/image.bash now + $WAIT_TIME minute
   fi
 else
   /usr/bin/echo "FAILED: code: ${code}!!!"
