@@ -137,3 +137,26 @@ mv /var/www/html/machines/68fa56d97f7c4ad18b377cc5780ee614 /var/www/html/machine
 Note that /var/www/html is the fedora location, sudo mkdir /var/www/html/machines to create, ajust the permissions if needed.
 
 
+# Forcing modes
+In the charger_receiver.ino:
+```
+// we have 3 states: auto, force on and force off.
+#define AUTO  0x01
+#define BATON 0x02
+#define USBON 0x04
+```
+Default: 0x01 (AUTO)
+To test:
+```
+pi@raspberrypi:~/pisolar $ /home/pi/pisolar/writereg.py 16 0
+pi@raspberrypi:~/pisolar $ /home/pi/pisolar/readreg.py 16
+0x0
+```
+Put the ATTiny in test mode.
+To test the panel:
+```
+pi@raspberrypi:~/pisolar $ /home/pi/pisolar/writereg.py 16 2
+pi@raspberrypi:~/pisolar $ /home/pi/pisolar/readreg.py 16
+0x2
+```
+The panel will charge the battery.
