@@ -91,7 +91,7 @@ void loop()
 
       volatile bool automode =  i2c_regs[TESTMODEOFFSET]&AUTO;
       if (automode) {
-        if (*val<batcharged) {
+        if (*val<*batcharged) {
           digitalWrite(ledgreen, LOW);
         } else {
           digitalWrite(ledgreen, HIGH);
