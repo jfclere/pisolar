@@ -85,7 +85,6 @@ The server myserver.myddns.me uses httpd with mod_dav (/etc/httpd/conf.d/webdav.
 </IfModule>
 Alias /webdav /home/webdav
 <Directory /home/webdav>
-    Require all granted
     DAV On
     AuthType Basic
     AuthName WebDAV
