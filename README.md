@@ -159,3 +159,6 @@ pi@raspberrypi:~/pisolar $ /home/pi/pisolar/readreg.py 16
 0x2
 ```
 The panel will charge the battery.
+
+# Other stuff
+The cron.sh can be used to update a remote RPI
