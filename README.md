@@ -20,7 +20,7 @@ $HOME/machine-id
 make sure the $HOME/.ssh/id_rsa.pub contains you public ssh key.
 run the preinstall script, the script assumes you have sudo permissions.
 ```bash
-pisolar/preinstall.sh
+bash preinstall.sh
 ```
 The preinstall install a service that will install all you need in PI the first time you boot it.
 Make sure you unmount boot and root before removing the SDcard.
