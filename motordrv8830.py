@@ -12,10 +12,10 @@ class JFCBot(object):
 		self.right = DRV8830(I2C_ADDR2)
 
 
-	def backward(self):
+	def forward(self):
 		self.left.set_voltage(5)
 		self.right.set_voltage(5)
-		self.left.reverse()
+		self.left.forward()
 		self.right.reverse()
 
 	def stop(self):
@@ -24,22 +24,22 @@ class JFCBot(object):
 		self.left.coast()
 		self.right.coast()
 
-	def forward(self):
+	def backward(self):
 		self.left.set_voltage(5)
 		self.right.set_voltage(5)
-		self.left.forward()
+		self.left.reverse()
 		self.right.forward()
 		
-	def Myright(self):
-		self.left.set_voltage(2.5)
-		self.right.set_voltage(2.5)
-		self.left.forward()
-		self.right.reverse()
-
 	def Myleft(self):
 		self.left.set_voltage(2.5)
 		self.right.set_voltage(2.5)
 		self.left.reverse()
+		self.right.reverse()
+
+	def Myright(self):
+		self.left.set_voltage(2.5)
+		self.right.set_voltage(2.5)
+		self.left.forward()
 		self.right.forward()
 
 	def stop(self):
@@ -53,10 +53,10 @@ if __name__=='__main__':
 	if len(sys.argv) == 2:
 		if sys.argv[1] == "Left":
 			Ab.Myleft()
-			time.sleep(0.5)
+			time.sleep(0.1)
 		if sys.argv[1] == "Right":
 			Ab.Myright()
-			time.sleep(0.5)
+			time.sleep(0.1)
 		if sys.argv[1] == "Forward":
 			Ab.forward()
 			time.sleep(0.5)
