@@ -13,8 +13,8 @@ class JFCBot(object):
 
 
 	def forward(self):
-		self.left.set_voltage(5)
-		self.right.set_voltage(5)
+		self.left.set_voltage(3)
+		self.right.set_voltage(3)
 		self.left.forward()
 		self.right.reverse()
 
@@ -25,20 +25,20 @@ class JFCBot(object):
 		self.right.coast()
 
 	def backward(self):
-		self.left.set_voltage(5)
-		self.right.set_voltage(5)
+		self.left.set_voltage(3)
+		self.right.set_voltage(3)
 		self.left.reverse()
 		self.right.forward()
 		
 	def Myleft(self):
-		self.left.set_voltage(2.5)
-		self.right.set_voltage(2.5)
+		self.left.set_voltage(3)
+		self.right.set_voltage(3)
 		self.left.reverse()
 		self.right.reverse()
 
 	def Myright(self):
-		self.left.set_voltage(2.5)
-		self.right.set_voltage(2.5)
+		self.left.set_voltage(3)
+		self.right.set_voltage(3)
 		self.left.forward()
 		self.right.forward()
 
@@ -46,6 +46,10 @@ class JFCBot(object):
 		self.left.set_voltage(0)
 		self.right.set_voltage(0)
 
+	def status(self):
+                left = self.left.get_fault().fault
+                right = self.right.get_fault().fault
+                return left, right
 		
 if __name__=='__main__':
 
@@ -54,13 +58,19 @@ if __name__=='__main__':
 		if sys.argv[1] == "Left":
 			Ab.Myleft()
 			time.sleep(0.1)
-		if sys.argv[1] == "Right":
+		elif sys.argv[1] == "Right":
 			Ab.Myright()
 			time.sleep(0.1)
-		if sys.argv[1] == "Forward":
+		elif sys.argv[1] == "Forward":
 			Ab.forward()
 			time.sleep(0.5)
-		if sys.argv[1] == "Backward":
+		elif sys.argv[1] == "Backward":
 			Ab.backward()
 			time.sleep(0.5)
+		elif sys.argv[1] == "Status":
+			status = Ab.status()
+			if status[0] == 1 or status[1] == 1:
+				print("Failed!")
+		else:
+			print("Status: ",Ab.status())
 	Ab.stop()
