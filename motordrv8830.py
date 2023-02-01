@@ -51,6 +51,11 @@ class JFCBot(object):
                 right = self.right.get_fault().fault
                 return left, right
 		
+	def debugstatus(self):
+		left = self.left.get_fault()
+		right = self.right.get_fault()
+		return(left, right)
+
 if __name__=='__main__':
 
 	Ab = JFCBot()
@@ -72,5 +77,5 @@ if __name__=='__main__':
 			if status[0] == 1 or status[1] == 1:
 				print("Failed!")
 		else:
-			print("Status: ",Ab.status())
+			print("Status: ",Ab.debugstatus())
 	Ab.stop()
