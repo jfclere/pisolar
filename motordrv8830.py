@@ -63,9 +63,15 @@ if __name__=='__main__':
 		if sys.argv[1] == "Left":
 			Ab.Myleft()
 			time.sleep(0.1)
+		elif sys.argv[1] == "Left90":
+			Ab.Myleft()
+			time.sleep(0.42)
 		elif sys.argv[1] == "Right":
 			Ab.Myright()
 			time.sleep(0.1)
+		elif sys.argv[1] == "Right90":
+			Ab.Myright()
+			time.sleep(0.42)
 		elif sys.argv[1] == "Forward":
 			Ab.forward()
 			time.sleep(0.5)
