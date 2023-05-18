@@ -24,10 +24,13 @@ if len(sys.argv) == 3:
    ver = int(sys.argv[2])
 if len(sys.argv) == 2:
    # read the file
-   text_file = open("/home/pi/pisolar/servos90.txt")
-   hor = int(text_file.readline())
-   ver = int(text_file.readline())
-   text_file.close()
+   try:
+     text_file = open("/home/pi/pisolar/servos90.txt")
+     hor = int(text_file.readline())
+     ver = int(text_file.readline())
+     text_file.close()
+   except Exception as e:
+     print('Exception: ')
    print('hor: ' + str(hor) + ' ver: ' + str(ver))
    if sys.argv[1] == "Left":
        hor = hor + 50
