@@ -12,6 +12,7 @@ from socketserver import ThreadingMixIn
 from io import StringIO
 import time
 from picamera2 import Picamera2
+import subprocess
 
 picam2 = Picamera2()
 
@@ -43,14 +44,43 @@ class CamHandler(BaseHTTPRequestHandler):
 			return
 		if self.path.endswith('.html'):
 			print("html request")
+			host = self.headers.get('Host')
+			print(host)
 			self.send_response(200)
 			self.send_header('Content-type','text/html')
 			self.end_headers()
 			self.wfile.write(bytes('<html><head></head><body>', "utf-8"))
-			self.wfile.write(bytes('<img src="http://192.168.1.119:8080/cam.mjpg"/>', "utf-8"))
+			self.wfile.write(bytes('<img src="http://' + host + '/cam.mjpg"/>', "utf-8"))
 			self.wfile.write(bytes('</body></html>', "utf-8"))
 			return
-
+		if self.path.endswith('Down'):
+ 			# Call the Down script...
+			self.DoCmd("Down")
+			return
+		if self.path.endswith('Up'):
+ 			# Call the Up script...
+			self.DoCmd("Up")
+			return
+		if self.path.endswith('Right'):
+ 			# Call the Up script...
+			self.DoCmd("Right")
+			return
+		if self.path.endswith('Left'):
+ 			# Call the Up script...
+			self.DoCmd("Left")
+			return
+		self.send_error(404, message=None, explain=None)
+		host = self.headers.get('Host')
+		print(host)
+	def DoCmd(self, cmd):
+		# run /home/pi/pisolar/servos90.py cmd
+		subprocess.run(["/home/pi/pisolar/servos90.py", cmd])
+		self.send_response(200)
+		self.send_header('Content-type','text/html')
+		self.end_headers()
+		self.wfile.write(bytes('<html><head></head><body>', "utf-8"))
+		self.wfile.write(bytes('<p>' + cmd + '!</p>', "utf-8"))
+		self.wfile.write(bytes('</body></html>', "utf-8"))
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 	"""Handle requests in a separate thread."""
