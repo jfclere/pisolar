@@ -1,6 +1,7 @@
 [Unit]
 Description=Streaming service
 After=network.target
+Requires=pigpiod.service
 
 [Service]
 User=pi
