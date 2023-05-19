@@ -1,0 +1,27 @@
+<script>
+function myAction (direction) {
+  var xmlhr = new XMLHttpRequest();
+  xmlhr.open( "GET", direction, false);
+  xmlhr.send( null );
+}
+</script>
+<style>
+.test{
+    height:200px;
+    width:200px;
+    font-size:50px;
+}
+</style>
+
+<p align="center">
+ <button class="test" onclick="myAction('Up')">Up</button>
+</p>
+
+<p align="center">
+ <button class="test" onclick="myAction('Left')">Left</button> 
+<img src="/stream/cam.mjpg" style="width:50%" />
+ <button class="test" onclick="myAction('Right')">Right</button> 
+</p>
+<p align="center">
+ <button class="test" onclick="myAction('Down')">Down</button>
+</p>
