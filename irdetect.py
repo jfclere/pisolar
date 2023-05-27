@@ -25,7 +25,7 @@ PIR_PIN = 23
 GPIO.setup(PIR_PIN, GPIO.IN)
 
 print('Starting up the PIR Module (Control C to stop)')
-time.sleep(1)
+time.sleep(10)
 
 f = open("/etc/machine-id", "r")
 machine_id = f.read().rstrip()
