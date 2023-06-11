@@ -166,6 +166,13 @@ Some more things...
 ## Led indicator
 Uses led.py and gpio=26 for activity (blue), gpio=13 for network OK (green) and gpio=19 to indicate it can read its configuration (red). A 330 Ohm resistor is on the minus ;-)
 
+## Using lead battery 12V
+empty: 452
+
+full: 615
+
+The divisor is 1000+47 / 47 (Using 47k ohms resistor instead the 220k ohm).
+
 ## Autoupdate for random PRI
 
 The cron.sh can be used to update a remote RPI
