@@ -161,4 +161,11 @@ pi@raspberrypi:~/pisolar $ /home/pi/pisolar/readreg.py 16
 The panel will charge the battery.
 
 # Other stuff
+Some more things...
+
+## Led indicator
+Uses led.py and gpio=26 for activity (blue), gpio=13 for network OK (green) and gpio=19 to indicate it can read its configuration (red). A 330 Ohm resistor is on the minus ;-)
+
+## Autoupdate for random PRI
+
 The cron.sh can be used to update a remote RPI
