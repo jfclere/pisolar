@@ -24,7 +24,7 @@ machinename = x[1].rstrip()
 # loop 10 times testing network and server
 # somehow for about 2 minutes. 
 i = 0
-while i < 11:
+while i < 10:
   # print("on")
   r = requests.get('https://www.apache.org')
   if (r.status_code == 200):

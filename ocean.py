@@ -11,6 +11,8 @@ OCEANGPIO=23
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(OCEANGPIO,GPIO.OUT)
+GPIO.output(OCEANGPIO,GPIO.LOW)
+
 f = open("/etc/machine-id", "r")
 machine_id = f.read().rstrip()
 # print("*" + machine_id + "*")
@@ -23,7 +25,8 @@ machinename = x[1].rstrip()
 # loop 10 times testing network and server
 # somehow for about 2 minutes. 
 i = 0
-while i < 11:
+ison = False
+while i < 5:
   # print("on")
   r = requests.get('https://www.apache.org')
   if (r.status_code == 200):
@@ -31,8 +34,14 @@ while i < 11:
     # print('https://' + machinename + '/machines/' + machine_id + '.ok')
     if (r.status_code == 200):
       GPIO.output(OCEANGPIO,GPIO.HIGH)
+      print("on")
+      ison = True
     time.sleep(5)
-  # print("off")
-  GPIO.output(OCEANGPIO,GPIO.LOW)
+  if not ison:
+    print("off")
+    GPIO.output(OCEANGPIO,GPIO.LOW)
   time.sleep(5)
   i += 1
+
+# end make sur to stop
+GPIO.output(OCEANGPIO,GPIO.LOW)
