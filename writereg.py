@@ -16,7 +16,6 @@ class writereg:
     self.bus = smbus.SMBus(1) # Rev 2 Pi, Pi 2 & Pi 3 uses bus 1
                        # Rev 1 Pi uses bus 0
   def write(self, wait, val):
-    wait = int(sys.argv[1])
     # we can 0, 2, 4, 6, 8 or 16
     if wait == 2 or wait == 4 :
       # write batlow, batcharged
