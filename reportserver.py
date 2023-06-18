@@ -19,20 +19,24 @@ class reportserver:
   # report our information to the server
   def report(self, nodeinfo, readreg):
     val = readreg.read(0)
-    r = requests.get('https://' + self.server + '/machines/report-' + self.machine_id + '-' + val)
+    val = str(val)
+    r = requests.get('https://' + nodeinfo.server + '/machines/report-' + nodeinfo.machine_id + '-' + val)
     if (r.status_code != 404):
-      return False
+      return True
     val = readreg.read(6)
-    r = requests.get('https://' + self.server + '/machines/reportold-' + self.machine_id + '-' + val)
+    val = str(val)
+    r = requests.get('https://' + nodeinfo.server + '/machines/reportold-' + nodeinfo.machine_id + '-' + val)
     if (r.status_code != 404):
-      return False
+      return True
     # report ip
-    hostname = socket.gethostname()
-    val = socket.gethostbyname(hostname)
-    r = requests.get('https://' + self.server + '/machines/reportip-' + self.machine_id + '-' + val)
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    val = s.getsockname()[0]
+    s.close()
+    r = requests.get('https://' + nodeinfo.server + '/machines/reportip-' + nodeinfo.machine_id + '-' + val)
     if (r.status_code != 404):
-      return False
-    return True 
+      return True
+    return False 
 
 if __name__=='__main__':
 
