@@ -7,13 +7,13 @@ from ctypes import c_short
 from ctypes import c_byte
 from ctypes import c_ubyte
 
+DEVICE = 0x04 # Default device I2C address
 class readreg:
-  DEVICE = 0x04 # Default device I2C address
 
-  def __init__(self)
-    bus = smbus.SMBus(1) # Rev 2 Pi, Pi 2 & Pi 3 uses bus 1
+  def __init__(self):
+    self.bus = smbus.SMBus(1) # Rev 2 Pi, Pi 2 & Pi 3 uses bus 1
                          # Rev 1 Pi uses bus 0
-def read(self, wait):
+  def read(self, wait):
     wait = int(sys.argv[1])
     # we can 0, 2, 4, 6, 8 or 16
     if wait == 0 or wait == 2 or wait == 4 or wait == 6 :
