@@ -4,12 +4,14 @@
 import RPi.GPIO as GPIO
 import os
 import time
+import socket
 from nodeinfo import nodeinfo
 from readreg import readreg
 from writereg import writereg
 from reportserver import reportserver
 
 OCEANGPIO=23
+BLUELED=26
 
 # update register of the ATtiny
 def updatereg(nodeinfo, readreg):
@@ -37,11 +39,41 @@ GPIO.setwarnings(False)
 GPIO.setup(OCEANGPIO,GPIO.OUT)
 GPIO.output(OCEANGPIO,GPIO.LOW)
 
+# wait until we have an IP
+i = 1
+while i < 30:
+  try:
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+  except: 
+    time.sleep(1)
+    i += 1
+    continue
+  break
+net = True 
+if i == 30:
+  # We don't have network
+  net = False
+  GPIO.setup(BLUELED,GPIO.OUT)
+  GPIO.output(BLUELED,GPIO.HIGH)
+
+if not net:
+  print("NO Network!")
+
 myinfo = nodeinfo()
 if myinfo.read():
-  print("Failed")
-  stopatt(500)
+  if net:
+    # Probably maintenance mode required
+    myreg = readreg()
+    myreportserver = reportserver()
+    myreportserver.report(myinfo, myreg)
+    print("myinfo.read() Failed maintenance mode!")
+  else:
+    # not sure what to do for moment restart in a while...
+    print("myinfo.read() Failed!");
+    stopatt(500)
   exit()
+
 
 if myinfo.TIME_ACTIVE > 0:
   GPIO.output(OCEANGPIO,GPIO.HIGH)
