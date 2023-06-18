@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Tell ATtiny to power off for a while.
+# Write in the ATtiny registers
 from struct import *
 import sys
 import smbus
@@ -8,36 +8,41 @@ from ctypes import c_short
 from ctypes import c_byte
 from ctypes import c_ubyte
 
-DEVICE = 0x04 # Default device I2C address
+class writereg:
 
-bus = smbus.SMBus(1) # Rev 2 Pi, Pi 2 & Pi 3 uses bus 1
-                     # Rev 1 Pi uses bus 0
-def main():
+  DEVICE = 0x04 # Default device I2C address
+
+  def __init__(self)
+    self.bus = smbus.SMBus(1) # Rev 2 Pi, Pi 2 & Pi 3 uses bus 1
+                       # Rev 1 Pi uses bus 0
+  def write(self, wait, val):
     wait = int(sys.argv[1])
     # we can 0, 2, 4, 6, 8 or 16
     if wait == 2 or wait == 4 :
       # write batlow, batcharged
-      val = int(sys.argv[2])
       mybytes = val.to_bytes(2, byteorder='little')
       data = unpack('BB', mybytes)
       data = [ mybytes[0], mybytes[1] ]
-      print(data)
-      bus.write_i2c_block_data(DEVICE, wait, data)
+      self.bus.write_i2c_block_data(DEVICE, wait, data)
+      return(data)
     elif wait == 8 :
       # write stopfor (long)
-      val = int(sys.argv[2])
       mybytes = val.to_bytes(8, byteorder='little')
       data = unpack('BBBBBBBB', mybytes)
       data = [ mybytes[0], mybytes[1], mybytes[2], mybytes[3], mybytes[4], mybytes[5], mybytes[6], mybytes[7] ]
-      print(data)
-      bus.write_i2c_block_data(DEVICE, wait, data)
+      self.bus.write_i2c_block_data(DEVICE, wait, data)
+      return(data)
     elif wait == 16:
       # write testmode
-      val = int(sys.argv[2])
       mybytes = val.to_bytes(1, byteorder='little')
       data = unpack('B', mybytes)
       data = [ mybytes[0] ]
-      bus.write_i2c_block_data(DEVICE, wait, data)
+      self.bus.write_i2c_block_data(DEVICE, wait, data)
+      return(data)
 
 if __name__ == "__main__":
-    main()
+    wait = int(sys.argv[1])
+    val = int(sys.argv[2])
+    at = writereg()
+    data = at.write(wait, val)
+    print(data)
