@@ -101,6 +101,7 @@ if [ "${code}" == "200" ]; then
     /usr/bin/cadaver https://${SERVER}/webdav/ < /tmp/cmd.txt
   else
     /usr/bin/echo "Can't read image"
+    /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/reportold-${MACHINE_ID}-camerapb
     /usr/bin/sync
   fi
 
