@@ -125,10 +125,15 @@ cbddc2a
 2
 ```
 The file $HOME/machine-id contains 68fa56d97f7c4ad18b377cc5780ee614.
-The images from the camera will be saved under /home/webdav/pi0neuchatel
-An image will be taken around every 10 minutes
+
+The images from the camera will be saved under /home/webdav/pi0neuchatel.
+
+An image will be taken around every 10 minutes.
+
 The raspberry won't be started if the battery voltage is lower than (600/167.57 ~ 3.58 Volts).
-Charging will stop at 700 (700/167.57 ~ 4.18 Volts)
+
+Charging will stop at 700 (700/167.57 ~ 4.18 Volts).
+
 And if something needs to up it will up for 2 minutes.
 
 ## $HOME/.ssh/id_rsa.pub
