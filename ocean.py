@@ -72,12 +72,12 @@ if myinfo.read():
     myreportserver = reportserver()
     myreportserver.report(myinfo, myreg)
     print("myinfo.read() Failed maintenance mode!")
+    exit()
   else:
-    # not sure what to do for moment restart in a while...
+    # Use some default values
     print("myinfo.read() Failed!");
-    stopatt(500)
-  exit()
-
+    myinfo.TIME_ACTIVE = 1
+    myinfo.WAIT_TIME = 3405
 
 if myinfo.TIME_ACTIVE > 0:
   GPIO.output(OCEANGPIO,GPIO.HIGH)
@@ -88,10 +88,11 @@ if myinfo.TIME_ACTIVE > 0:
 GPIO.output(OCEANGPIO,GPIO.LOW)
 
 # update register
-myreg = readreg()
-myreportserver = reportserver()
-myreportserver.report(myinfo, myreg)
-updatereg(myinfo, myreg)
+if net:
+  myreg = readreg()
+  myreportserver = reportserver()
+  myreportserver.report(myinfo, myreg)
+  updatereg(myinfo, myreg)
 
 # stop and wait
-stopatt(myinfo. WAIT_TIME)
+stopatt(myinfo.WAIT_TIME)
