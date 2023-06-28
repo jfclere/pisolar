@@ -102,6 +102,10 @@ if [ "${code}" == "200" ]; then
   else
     /usr/bin/echo "Can't read image"
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/reportold-${MACHINE_ID}-camerapb
+    /usr/bin/echo "mkcol ${REMOTE_DIR}" > /tmp/cmd.txt
+    /usr/bin/journalctl -u image > /tmp/temp.txt
+    /usr/bin/echo "put /tmp/temp.txt ${REMOTE_DIR}/temp.txt" >> /tmp/cmd.txt
+    /usr/bin/cadaver https://${SERVER}/webdav/ < /tmp/cmd.txt
     /usr/bin/sync
   fi
 
