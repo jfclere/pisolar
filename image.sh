@@ -68,8 +68,10 @@ if [ "${code}" == "200" ]; then
   if [ $? -eq 0 ]; then
     # the oldval is the bat volts at the time the ATtiny45 switched the USB on
     oldval=`/home/pi/pisolar/readreg.py 6`
+    address=`/usr/sbin/ifconfig | /usr/bin/grep inet | /usr/bin/grep -v 127.0.0.1 | /usr/bin/grep -v inet6 | /usr/bin/awk '{ print $2 }'
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/reportold-${MACHINE_ID}-${oldval}
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${val}
+    /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${address}
   else
     IS_SOLAR=false
     /usr/bin/echo "ERROR readreg.py 0"
