@@ -31,6 +31,10 @@ def updatereg(nodeinfo, readreg):
 def stopatt(wait):
   mywritereg = writereg()
   mywritereg.write(8, wait)
+  myreg = readreg()
+  val = myreg.read(8)
+  if val != wait:
+    print("stopatt read doesn't give right value")
   os.system("sudo init 0")
     
 
