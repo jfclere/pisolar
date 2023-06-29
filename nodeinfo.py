@@ -50,27 +50,31 @@ class nodeinfo:
 
   # get our configuration from server
   def read(self):
-    r = requests.get('https://' + self.server + '/machines/' + self.machine_id)
-    if (r.status_code == 200):
-      # Read the information
-      i = 0
-      for l in r.iter_lines():
-        l = l.decode('ascii')
-        if i == 0:
-          self.REMOTE_DIR=l
-        if i == 1:
-          self.WAIT_TIME=int(l)
-        if i == 2:
-          self.BAT_LOW=int(l)
-        if i == 3:
-          self.GIT_VER=l
-        if i == 4:
-          self.BATCHARGED=int(l)
-        if i == 5:
-          self.TIME_ACTIVE=int(l)
-        i = i + 1
-      return False
-    return True
+    try:
+      r = requests.get('https://' + self.server + '/machines/' + self.machine_id)
+      if (r.status_code == 200):
+        # Read the information
+        i = 0
+        for l in r.iter_lines():
+          l = l.decode('ascii')
+          if i == 0:
+            self.REMOTE_DIR=l
+          if i == 1:
+            self.WAIT_TIME=int(l)
+          if i == 2:
+            self.BAT_LOW=int(l)
+          if i == 3:
+            self.GIT_VER=l
+          if i == 4:
+            self.BATCHARGED=int(l)
+          if i == 5:
+            self.TIME_ACTIVE=int(l)
+          i = i + 1
+        return False
+      return True
+    except Exception as e:
+      print('Exception: ' + str(e))
+      return True
 
 if __name__=='__main__':
 
