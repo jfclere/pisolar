@@ -18,25 +18,29 @@ class reportserver:
 
   # report our information to the server
   def report(self, nodeinfo, readreg):
-    val = readreg.read(0)
-    val = str(val)
-    r = requests.get('https://' + nodeinfo.server + '/machines/report-' + nodeinfo.machine_id + '-' + val)
-    if (r.status_code != 404):
+    try:
+      val = readreg.read(0)
+      val = str(val)
+      r = requests.get('https://' + nodeinfo.server + '/machines/report-' + nodeinfo.machine_id + '-' + val)
+      if (r.status_code != 404):
+        return True
+      val = readreg.read(6)
+      val = str(val)
+      r = requests.get('https://' + nodeinfo.server + '/machines/reportold-' + nodeinfo.machine_id + '-' + val)
+      if (r.status_code != 404):
+        return True
+      # report ip
+      s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+      s.connect(("8.8.8.8", 80))
+      val = s.getsockname()[0]
+      s.close()
+      r = requests.get('https://' + nodeinfo.server + '/machines/reportip-' + nodeinfo.machine_id + '-' + val)
+      if (r.status_code != 404):
+        return True
+      return False 
+    except Exception as e:
+      print('Exception: ' + str(e))
       return True
-    val = readreg.read(6)
-    val = str(val)
-    r = requests.get('https://' + nodeinfo.server + '/machines/reportold-' + nodeinfo.machine_id + '-' + val)
-    if (r.status_code != 404):
-      return True
-    # report ip
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    val = s.getsockname()[0]
-    s.close()
-    r = requests.get('https://' + nodeinfo.server + '/machines/reportip-' + nodeinfo.machine_id + '-' + val)
-    if (r.status_code != 404):
-      return True
-    return False 
 
 if __name__=='__main__':
 
