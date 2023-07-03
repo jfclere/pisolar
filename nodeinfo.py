@@ -23,6 +23,7 @@ class nodeinfo:
   GIT_VER="5fe4895"
   BATCHARGED=773
   TIME_ACTIVE=2
+  MAINT_MODE=False
 
   # read the machine_id (/etc/machine-id)
   # read server info ($HOME/.netrc)
@@ -70,6 +71,10 @@ class nodeinfo:
           if i == 5:
             self.TIME_ACTIVE=int(l)
           i = i + 1
+        return False
+      if (r.status_code == 404):
+        # 404 means mainteance
+        seldf.MAINT_MODE=False
         return False
       return True
     except Exception as e:

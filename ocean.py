@@ -66,18 +66,19 @@ if not net:
 
 myinfo = nodeinfo()
 if myinfo.read():
-  if net:
-    # Probably maintenance mode required
-    myreg = readreg()
-    myreportserver = reportserver()
-    myreportserver.report(myinfo, myreg)
-    print("myinfo.read() Failed maintenance mode!")
-    exit()
-  else:
-    # Use some default values
-    print("myinfo.read() Failed!");
-    myinfo.TIME_ACTIVE = 1
-    myinfo.WAIT_TIME = 3405
+  # Use some default values
+  print("myinfo.read() Failed!");
+  myinfo.TIME_ACTIVE = 1
+  myinfo.WAIT_TIME = 3405
+  myinfo.MAINT_MODE = False
+
+if not myinfo.MAINT_MODE:
+  # Maintenance mode required
+  myreg = readreg()
+  myreportserver = reportserver()
+  myreportserver.report(myinfo, myreg)
+  print("myinfo.read() Failed maintenance mode!")
+  exit()
 
 if myinfo.TIME_ACTIVE > 0:
   GPIO.output(OCEANGPIO,GPIO.HIGH)
