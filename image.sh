@@ -75,6 +75,7 @@ if [ "${code}" == "200" ]; then
   else
     IS_SOLAR=false
     /usr/bin/echo "ERROR readreg.py 0"
+    /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${address}
     /usr/bin/sync
   fi
 
@@ -176,6 +177,8 @@ else
   if [ "${code}" == "404" ]; then
     # No command file, maintenance mode
     /usr/bin/echo "Entrying maintenace mode"
+    address=`/usr/sbin/ifconfig | /usr/bin/grep inet | /usr/bin/grep -v 127.0.0.1 | /usr/bin/grep -v inet6 | /usr/bin/awk '{ print $2 }'`
+    /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${address}
     /usr/bin/sync
   else
     # Something wrong on the server
