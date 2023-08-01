@@ -1,13 +1,58 @@
-#include<stdio.h>
-#include<sys/inotify.h>
-#include<unistd.h>
-#include<stdlib.h>
-#include<signal.h>
-#include<fcntl.h>
-#include<string.h>
+#include <stdio.h>
+#include <sys/inotify.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <string.h>
+#include <time.h>
+
+static float readval(char *input) {
+   char s[100], u[10];
+   float v;
+   sscanf(input, "%s : %f%s", s, &v, u);
+   return v;
+}
+struct info {
+   float temp;
+   float pres;
+   float humi;
+};
+
+/* read the Temperature, Pressure and Humidity from the temp.txt file */
+static int readtempfile(char *filename, struct info *info) {
+   FILE *fptr = fopen(filename, "r");
+   if (!fptr)
+       return 1;
+   size_t size = 100;
+   char *input = malloc(100);
+   int ret = 0;
+   while (fgets(input, size, fptr)>0) {
+       if (strstr(input, "Temperature")) {
+           info->temp = readval(input);
+           ret++;
+       } else if (strstr(input, "Pressure")) {
+           info->pres = readval(input);
+           ret++;
+       } if (strstr(input, "Humidity")) {
+           info->humi = readval(input);
+           ret++;
+       }
+   }
+   fclose(fptr); 
+   free(input);
+   if (ret == 3)
+       return 0;
+   return 1;
+}
 
 int main(int argc, char **argv){
     char *path_to_be_watched;
+
+    if (argc != 2) {
+        printf("Need directory name\n");
+        exit(1);
+    }
     path_to_be_watched = argv[1];
 
     int fd = inotify_init();
@@ -33,12 +78,26 @@ int main(int argc, char **argv){
        }
        struct inotify_event *event = (struct inotify_event *) buffer;
        if (event->len) {
+           /*
            if (event->mask & IN_CREATE) {
                printf("file: %s created\n", event->name);
            } else if (event->mask & IN_DELETE) {
                printf("file: %s deleted\n", event->name);
            } else if (event->mask & IN_MODIFY) {
-               printf("file: %s modified\n", event->name);
+           */
+           if (event->mask & IN_MODIFY) {
+               if (!strcmp(event->name, "temp.txt")) {
+                   /* The has changed let's tell the world */
+                   struct info info;
+                   char fullname[100];
+                   strcpy(fullname, path_to_be_watched);
+                   strcat(fullname, "/temp.txt");
+                   int err = readtempfile(fullname, &info);
+                   if (!err) {
+                       time_t t = time(NULL);
+                       printf("%d %f %f %f\n", t, info.temp, info.pres, info.humi);
+                   }
+               }
            }
        } else {
            printf("no event!!!\n");
