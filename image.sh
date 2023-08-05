@@ -100,6 +100,25 @@ if [ "${code}" == "200" ]; then
     /usr/bin/python /home/pi/pisolar/bme280.py > /tmp/temp.txt
     if [ $? -eq 0 ]; then
       /usr/bin/echo "put /tmp/temp.txt ${REMOTE_DIR}/temp.txt" >> /tmp/cmd.txt
+    else
+      # Check if the image is dark
+      /usr/bin/python /home/pi/pisolar/cv2isdark.py
+      if [ $? -eq 0 ]; then
+        # Dark image and no data to send: save energy do nothing...
+        # sleep WAIT_TIME minutes and restart
+        if $IS_SOLAR; then
+          wait_for=`/usr/bin/expr $WAIT_TIME \\* 60`
+          /home/pi/pisolar/writereg.py 8 $wait_for
+          if [ $? -ne 0 ]; then
+            /usr/bin/echo "FAILED: can't return in wait mode!!!"
+            /usr/bin/sync
+            exit 0
+          fi
+          /usr/bin/echo "Stopping poweroff"
+          /usr/bin/sync
+          /usr/bin/sudo /usr/sbin/poweroff
+        fi
+      fi
     fi
     /usr/bin/cadaver https://${SERVER}/webdav/ < /tmp/cmd.txt
   else
