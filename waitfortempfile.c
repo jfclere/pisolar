@@ -19,6 +19,8 @@ struct info {
    float humi;
 };
 
+void inserttemp(char *table, time_t t, float temp, float pres, float humi);
+
 /* read the Temperature, Pressure and Humidity from the temp.txt file */
 static int readtempfile(char *filename, struct info *info) {
    FILE *fptr = fopen(filename, "r");
@@ -47,13 +49,12 @@ static int readtempfile(char *filename, struct info *info) {
 }
 
 int main(int argc, char **argv){
-    char *path_to_be_watched;
-
-    if (argc != 2) {
-        printf("Need directory name\n");
+    if (argc != 3) {
+        printf("Need directory name and table name\n");
         exit(1);
     }
-    path_to_be_watched = argv[1];
+    char *path_to_be_watched = argv[1];
+    char *table = argv[2];
 
     int fd = inotify_init();
 /*
@@ -96,6 +97,7 @@ int main(int argc, char **argv){
                    if (!err) {
                        time_t t = time(NULL);
                        printf("%d %f %f %f\n", t, info.temp, info.pres, info.humi);
+                       inserttemp(table, t, info.temp, info.pres, info.humi);
                    }
                }
            }
