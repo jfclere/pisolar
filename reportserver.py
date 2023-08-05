@@ -37,10 +37,10 @@ class reportserver:
       r = requests.get('https://' + nodeinfo.server + '/machines/reportip-' + nodeinfo.machine_id + '-' + val)
       if (r.status_code != 404):
         return True
-      return False 
     except Exception as e:
       print('Exception: ' + str(e))
       return True
+    return False 
 
 if __name__=='__main__':
 

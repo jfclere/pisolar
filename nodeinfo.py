@@ -74,7 +74,7 @@ class nodeinfo:
         return False
       if (r.status_code == 404):
         # 404 means mainteance
-        seldf.MAINT_MODE=False
+        seldf.MAINT_MODE=True
         return False
       return True
     except Exception as e:

@@ -72,7 +72,7 @@ if myinfo.read():
   myinfo.WAIT_TIME = 3405
   myinfo.MAINT_MODE = False
 
-if not myinfo.MAINT_MODE:
+if myinfo.MAINT_MODE:
   # Maintenance mode required
   myreg = readreg()
   myreportserver = reportserver()
