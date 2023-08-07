@@ -81,6 +81,45 @@ class nodeinfo:
       print('Exception: ' + str(e))
       return True
 
+  # save configuration receive from server
+  def save_conf(self):
+    try:
+      f = open("savedconfig.txt", "w")
+      f.write(self.REMOTE_DIR)
+      f.write("\n")
+      f.write(str(self.WAIT_TIME))
+      f.write("\n")
+      f.write(str(self.BAT_LOW))
+      f.write("\n")
+      f.write(self.GIT_VER)
+      f.write("\n")
+      f.write(str(self.BATCHARGED))
+      f.write("\n")
+      f.write(str(self.TIME_ACTIVE))
+      f.write("\n")
+      f.close()
+    except Exception as e:
+      print('Exception: ' + str(e))
+      return True
+    return False
+
+  # read save version id
+  def read_saved_version(self):
+    version=""
+    try:
+      f = open("savedconfig.txt", "r")
+      i = 0
+      for line in f:
+        if i == 3:
+          version=line.rstrip()
+          break
+        i = i + 1
+      f.close()
+    except Exception as e:
+      print('Exception: ' + str(e))
+      return version
+    return version
+
 if __name__=='__main__':
 
   info = nodeinfo()
@@ -95,4 +134,6 @@ if __name__=='__main__':
     print(info.GIT_VER)
     print(info.BATCHARGED)
     print(info.TIME_ACTIVE)
+    info.save_conf()
+    print("saved version: " + info.read_saved_version())
     print("Success")

@@ -19,6 +19,8 @@ struct info {
    float humi;
 };
 
+int debug = 0;
+
 void inserttemp(char *table, time_t t, float temp, float pres, float humi);
 
 /* read the Temperature, Pressure and Humidity from the temp.txt file */
@@ -63,7 +65,7 @@ int main(int argc, char **argv){
         exit(1);
     }
  */
-    int wd = inotify_add_watch(fd,path_to_be_watched,IN_MODIFY | IN_CREATE | IN_DELETE);
+    int wd = inotify_add_watch(fd,path_to_be_watched, IN_ALL_EVENTS);
     if (wd==-1){
         printf("inotify_add_watch failed: Could not watch : %s\n",path_to_be_watched);
         exit(1);
@@ -77,34 +79,49 @@ int main(int argc, char **argv){
            printf("read failed\n");
            break; /* something wrong */
        }
-       struct inotify_event *event = (struct inotify_event *) buffer;
-       if (event->len) {
-           /*
-           if (event->mask & IN_CREATE) {
-               printf("file: %s created\n", event->name);
-           } else if (event->mask & IN_DELETE) {
-               printf("file: %s deleted\n", event->name);
-           } else if (event->mask & IN_MODIFY) {
-           */
-           if (event->mask & IN_MODIFY) {
-               if (!strcmp(event->name, "temp.txt")) {
-                   /* The has changed let's tell the world */
-                   struct info info;
-                   char fullname[100];
-                   strcpy(fullname, path_to_be_watched);
-                   strcat(fullname, "/temp.txt");
-                   int err = readtempfile(fullname, &info);
-                   if (!err) {
-                       time_t t = time(NULL);
-                       printf("%d %f %f %f\n", t, info.temp, info.pres, info.humi);
-                       inserttemp(table, t, info.temp, info.pres, info.humi);
+       int offset = 0;
+       while (ret>0) {
+           struct inotify_event *event = (struct inotify_event *) &buffer[offset];
+           if (debug)
+               printf("file: event length %d read: %d\n", event->len+sizeof(struct inotify_event), ret);
+           if (event->len) {
+               if (event->mask & IN_CREATE) {
+                   if (debug)
+                       printf("file: %s created\n", event->name);
+               } else if (event->mask & IN_DELETE) {
+                   if (debug)
+                       printf("file: %s deleted\n", event->name);
+               } else if (event->mask & IN_MODIFY || event->mask & IN_MOVE) {
+                   if (debug)
+                       printf("file: %s modified or moved\n", event->name);
+                   if (!strcmp(event->name, "temp.txt")) {
+                       /* The has changed let's tell the world */
+                       struct info info;
+                       char fullname[100];
+                       strcpy(fullname, path_to_be_watched);
+                       strcat(fullname, "/temp.txt");
+                       int err = readtempfile(fullname, &info);
+                       if (!err) {
+                           time_t t = time(NULL);
+                           if (debug)
+                               printf("%d %f %f %f\n", t, info.temp, info.pres, info.humi);
+                           inserttemp(table, t, info.temp, info.pres, info.humi);
+                       }
                    }
+               } else {
+                   if (debug)
+                       printf("file: event %d on %s\n", event->mask, event->name);
                }
+           } else {
+               if (debug)
+                   printf("event %d len zero!!!\n", event->mask);
            }
-       } else {
-           printf("no event!!!\n");
-           break; /* something fishy */
-       }
+           /* there might be several events in the buffer */
+           offset = offset + event->len+sizeof(struct inotify_event);
+           ret = ret - (event->len+sizeof(struct inotify_event));
+           if (debug)
+               printf("file: event offset %d remaining %d\n", offset , ret);
+        }
     }
   
 }

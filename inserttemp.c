@@ -7,11 +7,11 @@
 
 /* createdb bme280 --owner jfclere
  * psql -d bme280
- * CREATE TABLE measurements (
- * time bigint,
- * temp NUMERIC(4,2),
- * pres NUMERIC(6,2),
- * humi NUMERIC(4,2));
+  CREATE TABLE measurements (
+  time bigint,
+  temp NUMERIC(4,2),
+  pres NUMERIC(6,2),
+  humi NUMERIC(5,2));
  *
  * bme280=> select * from measurements;
  *     time    | temp  |  pres   | humi
