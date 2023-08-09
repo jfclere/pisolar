@@ -35,4 +35,9 @@ create a user with viewer permission and use this one for demos.
 
 use https in grafana: /etc/grafana/grafana.ini
 
-
+may be anonymous access:
+```
+[auth.anonymous]
+enabled = true
+...
+```
