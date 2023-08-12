@@ -82,7 +82,7 @@ class nodeinfo:
       return True
 
   # save configuration receive from server
-  def save_conf(self):
+  def saveconf(self):
     try:
       f = open("savedconfig.txt", "w")
       f.write(self.REMOTE_DIR)
@@ -104,7 +104,7 @@ class nodeinfo:
     return False
 
   # read save version id
-  def read_saved_version(self):
+  def readsavedversion(self):
     version=""
     try:
       f = open("savedconfig.txt", "r")

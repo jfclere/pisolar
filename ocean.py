@@ -74,9 +74,12 @@ if myinfo.read():
 
 if myinfo.MAINT_MODE:
   # Maintenance mode required
-  myreg = readreg()
-  myreportserver = reportserver()
-  myreportserver.report(myinfo, myreg)
+  try:
+    myreg = readreg()
+    myreportserver = reportserver()
+    myreportserver.report(myinfo, myreg)
+  except: 
+    print("report to server failed"
   print("myinfo.read() Failed maintenance mode!")
   exit()
 
@@ -90,10 +93,29 @@ GPIO.output(OCEANGPIO,GPIO.LOW)
 
 # update register
 if net:
-  myreg = readreg()
-  myreportserver = reportserver()
-  myreportserver.report(myinfo, myreg)
-  updatereg(myinfo, myreg)
+  try:
+    myreg = readreg()
+    myreportserver = reportserver()
+    myreportserver.report(myinfo, myreg)
+    updatereg(myinfo, myreg)
+  except: 
+    print("report to server failed")
+    net = False
+
+# update software
+if net:
+  try:
+    ver = myinfo.readsavedversion()
+    if ver != myinfo.GIT_VER:
+      cmd = "/home/pi/pisolar/gitver.sh " + ver
+      if os.system(cmd):
+        print(cmd + " Failed")
+      else:
+        myinfo.GIT_VER = ver
+        myinfo.saveconf()
+  except: 
+    print("software update failed")
+
 
 # stop and wait
 stopatt(myinfo.WAIT_TIME)
