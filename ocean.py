@@ -85,8 +85,9 @@ if myinfo.MAINT_MODE:
 
 if myinfo.TIME_ACTIVE > 0:
   GPIO.output(OCEANGPIO,GPIO.HIGH)
-  print("on")
+  print("on for " + str(myinfo.TIME_ACTIVE) + " Minutes")
   time.sleep(60*myinfo.TIME_ACTIVE)
+  print("Done")
 
 # end make sure to stop
 GPIO.output(OCEANGPIO,GPIO.LOW)
@@ -107,11 +108,10 @@ if net:
   try:
     ver = myinfo.readsavedversion()
     if ver != myinfo.GIT_VER:
-      cmd = "/home/pi/pisolar/gitver.sh " + ver
+      cmd = "/home/pi/pisolar/gitver.sh " + myinfo.GIT_VER
       if os.system(cmd):
         print(cmd + " Failed")
       else:
-        myinfo.GIT_VER = ver
         myinfo.saveconf()
   except: 
     print("software update failed")
