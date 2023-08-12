@@ -79,7 +79,7 @@ if myinfo.MAINT_MODE:
     myreportserver = reportserver()
     myreportserver.report(myinfo, myreg)
   except: 
-    print("report to server failed"
+    print("report to server failed")
   print("myinfo.read() Failed maintenance mode!")
   exit()
 
