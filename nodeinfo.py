@@ -84,7 +84,7 @@ class nodeinfo:
   # save configuration receive from server
   def saveconf(self):
     try:
-      f = open("savedconfig.txt", "w")
+      f = open("/home/pi/savedconfig.txt", "w")
       f.write(self.REMOTE_DIR)
       f.write("\n")
       f.write(str(self.WAIT_TIME))
@@ -107,7 +107,7 @@ class nodeinfo:
   def readsavedversion(self):
     version=""
     try:
-      f = open("savedconfig.txt", "r")
+      f = open("/home/pi/savedconfig.txt", "r")
       i = 0
       for line in f:
         if i == 3:
