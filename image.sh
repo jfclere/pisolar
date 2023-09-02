@@ -94,12 +94,16 @@ if [ "${code}" == "200" ]; then
   /usr/bin/libcamera-still -o /tmp/now.jpg
   if [ $? -eq 0 ]; then
     /usr/bin/echo "mkcol ${REMOTE_DIR}" > /tmp/cmd.txt
-    /usr/bin/echo "mkcol ${REMOTE_DIR}/${BASEDIR}" >> /tmp/cmd.txt
-    /usr/bin/echo "mkcol ${REMOTE_DIR}/${DIR}" >> /tmp/cmd.txt
-    /usr/bin/echo "put /tmp/now.jpg ${REMOTE_DIR}/${FILE}" >> /tmp/cmd.txt
     /usr/bin/python /home/pi/pisolar/bme280.py > /tmp/temp.txt
     if [ $? -eq 0 ]; then
       /usr/bin/echo "put /tmp/temp.txt ${REMOTE_DIR}/temp.txt" >> /tmp/cmd.txt
+      /usr/bin/python /home/pi/pisolar/cv2isdark.py
+      if [ $? -ne 0 ]; then
+        # if the image is dark don't send it.
+        /usr/bin/echo "mkcol ${REMOTE_DIR}/${BASEDIR}" >> /tmp/cmd.txt
+        /usr/bin/echo "mkcol ${REMOTE_DIR}/${DIR}" >> /tmp/cmd.txt
+        /usr/bin/echo "put /tmp/now.jpg ${REMOTE_DIR}/${FILE}" >> /tmp/cmd.txt
+      fi
     else
       # Check if the image is dark
       /usr/bin/python /home/pi/pisolar/cv2isdark.py
@@ -118,6 +122,11 @@ if [ "${code}" == "200" ]; then
           /usr/bin/sync
           /usr/bin/sudo /usr/sbin/poweroff
         fi
+      else
+        # if the image is NOT dark send it.
+        /usr/bin/echo "mkcol ${REMOTE_DIR}/${BASEDIR}" >> /tmp/cmd.txt
+        /usr/bin/echo "mkcol ${REMOTE_DIR}/${DIR}" >> /tmp/cmd.txt
+        /usr/bin/echo "put /tmp/now.jpg ${REMOTE_DIR}/${FILE}" >> /tmp/cmd.txt
       fi
     fi
     /usr/bin/cadaver https://${SERVER}/webdav/ < /tmp/cmd.txt
