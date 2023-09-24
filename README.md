@@ -2,13 +2,13 @@
 software for ATTiny45 to power off the PI and power on after a while, the PI use I2C to start the power off/power on cycle.
 Look to: https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c to install the software on PI.
 
-# install arduino IDE on your laptop to build the ATTiny software.
+# install arduino IDE on your laptop to build the ATTiny software. (use 1.8.19, 2.1.1 is broken for ATTiny)
 See https://docs.arduino.cc/software/ide-v1/tutorials/Linux
 
 # prepare the SDcard for the PI:
 In the laptop make sure the SDcard is not mounted and copy the image.
 ```bash
-dd bs=4M if=2022-04-04-raspios-bullseye-armhf-lite.img of=/dev/mmcblk0 conv=fsync
+dd bs=4M if=2023-05-03-raspios-bullseye-armhf-lite.img of=/dev/mmcblk0 conv=fsync
 ```
 remove and reinsert the SDcard in the laptop (it will mount automatically otherwise mount boot and root by hands).
 create the following files (See https://github.com/jfclere/pisolar#making-the-raspberry-an-object):
@@ -34,7 +34,7 @@ If all works you should be able to ping the PI after a while and later to ssh to
 # connect the ATTiny output(Pin 6)to IN(1) of the relay board.
 The relay is used to cut the + cable of the USB that power the PI.
 
-In fact I am not used a Relay but a MOSFET P and optocoupler but that is the same idea.
+In fact I am not using a Relay but a MOSFET P and optocoupler but that is the same idea.
 
 # Connect the + off the LiPo battery to 1M ohms + 220k ohms divisor
 The Pin 2 of the ATTiny is connected after the 1M ohms resistor
