@@ -8,6 +8,8 @@
 
 #define SHUTDOWNTIME 30000UL
 #define WAITFACTOR 1000UL
+#define MAXUPTIME 21600000UL
+#define KEEPOFFTIME 10UL
 
 int sum = 0; // sum
 int count = 0;
@@ -44,6 +46,9 @@ unsigned short 	*batcharged;
 unsigned short 	*val; // medium value
 unsigned short  *valstart; // value when the PI has been switched on
 unsigned long *stopfor;
+
+unsigned long uptime = 0;   // time when the RPI started
+unsigned long waittime = 0; // time when the wait for wait for shutdown started
 
 #define TESTMODEOFFSET 16
 
@@ -111,14 +116,26 @@ void loop()
   
   // stop and sleep.
   if (*stopfor != 0) {
-    // We have just received a stop for the PI
+    // We have received a stop for the PI
+    unsigned long currentMillis = millis();
     if (ispion) {
-      delay(SHUTDOWNTIME); // give time to stop.
-      digitalWrite(ledred, LOW); // disable 5 V USB.
-      ispion = false;
+      if (waittime) {
+        // give time to stop.
+        if (currentMillis - waittime > SHUTDOWNTIME) {
+          digitalWrite(ledred, LOW); // disable 5 V USB.
+          ispion = false;
+          waittime = currentMillis;
+        } 
+      } else {
+        waittime = currentMillis;
+      }
+    } else {
+      /* wait for WAITFACTOR * stopfor */
+      if (currentMillis - waittime > WAITFACTOR) {
+        waittime = currentMillis;
+        *stopfor = *stopfor -1;
+      }
     }
-    delay(WAITFACTOR);
-    *stopfor = *stopfor -1;
     return;
   }
 
@@ -142,9 +159,20 @@ void loop()
   } else {
     // Otherwise just switch on.
     if (!ispion) {
+      uptime = millis();
       *valstart = *val;
       digitalWrite(ledred, HIGH); // enable 5 V USB
       ispion = true;
+    } else {
+      /* The PI is on, make sure it doesn't drain for ever */
+      if (uptime) {
+        unsigned long currentMillis = millis();
+        if (currentMillis - uptime > MAXUPTIME) {
+          /* After 6 hours */
+          *stopfor = KEEPOFFTIME; /* stop for SHUTDOWNTIME + 10*WAITFACTOR */
+          uptime = 0;
+        }
+      }
     }
   }
 }
