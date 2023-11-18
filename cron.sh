@@ -9,6 +9,16 @@ code=`/usr/bin/curl -o /tmp/${MACHINE_ID} --silent --write-out '%{http_code}' ht
 if [ $? -ne 0 ]; then
   # just retry
   code=`/usr/bin/curl -o /tmp/${MACHINE_ID} --silent --write-out '%{http_code}' https://${SERVER}/machines/${MACHINE_ID}`
+  if [ $? -ne 0 ]; then
+    # failing twice problem?
+    /usr/bin/echo "Something wrong..."
+    /usr/bin/sync
+    num=`/usr/bin/ls log.* | /usr/bin/wc -l`
+    if [ $num -lt 10 ]; then
+      /usr/bin/dmesg > log."`/usr/bin/date`"
+    fi
+    exit 1
+  fi
 fi
 if [ "${code}" == "200" ]; then
   REMOTE_DIR=`/usr/bin/head -n 1 /tmp/${MACHINE_ID}`
