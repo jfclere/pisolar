@@ -6,7 +6,7 @@ import RPi.GPIO as GPIO
 import os
 import time
 import socket
-import getpass
+import psutil
 
 from nodeinfo import nodeinfo
 from readreg import readreg
@@ -114,10 +114,14 @@ if i:
   myreg = readreg()
   val = myreg.read(0)
   print("charging bat is: ", val)
-  checkuser = getpass.getuser()
-  print("The user currently logged in is: " + checkuser)
   if val <= 550:
-    if checkuser != "":
+    i=0
+    for p in psutil.process_iter():
+      if p.name() == 'ssh':
+        print(p)
+        i += 1
+    if i > 0:
+      print("Don't kill!")
       exit()
     # stop and wait
     stopatt(myinfo.WAIT_TIME)
