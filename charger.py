@@ -117,10 +117,10 @@ if i:
   if val <= 550:
     i=0
     for p in psutil.process_iter():
-      if p.name() == 'ssh':
+      if p.name() == 'sshd':
         print(p)
         i += 1
-    if i > 0:
+    if i >= 3:
       print("Don't kill!")
       exit()
     # stop and wait
