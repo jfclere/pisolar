@@ -68,7 +68,7 @@ myinfo = nodeinfo()
 if myinfo.read():
   # Use some default values
   print("myinfo.read() Failed!");
-  myinfo.TIME_ACTIVE = 1
+  myinfo.TIME_ACTIVE = 0
   myinfo.WAIT_TIME = 120
   myinfo.MAINT_MODE = False
 
@@ -110,18 +110,22 @@ if net:
 # check if we are charging...
 i = GPIO.input(CHARGEGPIO)
 if i:
-  print("charging")
+  print("charging and " + str(myinfo.TIME_ACTIVE))
   myreg = readreg()
   val = myreg.read(0)
   print("charging bat is: ", val)
+  i=0
+  for p in psutil.process_iter():
+    if p.name() == 'sshd':
+      print(p)
+      i += 1
+  if i >= 3:
+    print("Don't kill!")
+    exit()
   if val <= 550:
-    i=0
-    for p in psutil.process_iter():
-      if p.name() == 'sshd':
-        print(p)
-        i += 1
-    if i >= 3:
-      print("Don't kill!")
-      exit()
     # stop and wait
     stopatt(myinfo.WAIT_TIME)
+  if myinfo.TIME_ACTIVE == 0:
+    # stop and wait
+    stopatt(myinfo.WAIT_TIME)
+
