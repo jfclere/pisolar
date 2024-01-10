@@ -20,6 +20,8 @@ class reportserver:
   def report(self, nodeinfo, readreg):
     try:
       val = readreg.read(0)
+      if val < 10:
+        val = readreg.read(0)
       val = str(val)
       r = requests.get('https://' + nodeinfo.server + '/machines/report-' + nodeinfo.machine_id + '-' + val)
       if (r.status_code != 404):
