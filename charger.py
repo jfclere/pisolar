@@ -6,7 +6,10 @@ import RPi.GPIO as GPIO
 import os
 import time
 import socket
+import sys
+import traceback
 import psutil
+import wifi
 
 from nodeinfo import nodeinfo
 from readreg import readreg
@@ -82,6 +85,23 @@ if myinfo.MAINT_MODE:
     print("report to server failed")
   print("myinfo.read() Failed maintenance mode!")
   exit()
+
+# send our IP to the server
+if net:
+  try:
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    val = s.getsockname()[0]
+    s.close()
+    mess = "IP :  " + str(val)
+    mess = bytes(mess, 'utf-8')
+    url = "/webdav/" + myinfo.REMOTE_DIR + "/ip.txt"
+    mywifi = wifi.wifi()
+    mywifi.sendserver(mess, url, myinfo.machine, 443, myinfo.login, myinfo.password)
+  except Exception as ex:
+    print("Send IP to web failed")
+    print(str(ex))
+    traceback.print_exception(type(ex), ex, ex.__traceback__)
 
 # update register
 if net:

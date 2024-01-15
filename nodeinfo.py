@@ -37,17 +37,24 @@ class nodeinfo:
       print('Exception: ' + str(e))
 
     self.server="jfclere.myddns.me"
+    self.login="jfclere"
+    self.password="changeit"
     home_directory = os.path.expanduser( '~' )
     try:
       text_file = open(home_directory + "/.netrc")
-      txt = text_file.readline()
+      for i in range(3): 
+        txt = text_file.readline()
+        x = txt.split(" ")
+        if x[0] == "machine":
+          self.machine=x[1].rstrip()
+        if x[0] == "login":
+          self.login=x[1].rstrip()
+        if x[0] == "password":
+          self.password=x[1].rstrip()
       text_file.close()
     except Exception as e:
       print('Exception: ' + str(e))
       return
-    x = txt.split(" ")
-    if x[0] == "machine":
-      self.server=x[1].rstrip()
 
   # get our configuration from server
   def read(self):
