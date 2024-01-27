@@ -13,6 +13,48 @@ IS_SOLAR=true
 SERVER=`/usr/bin/grep machine $HOME/.netrc | /usr/bin/awk ' { print $2 } '`
 UPDATE_READY=false
 
+#
+# write the low: start the logic
+write_low()
+{
+  newlow=$1
+  bat_low=`/home/pi/pisolar/readreg.py 2`
+  if [ $? -eq 0 ]; then
+    if [ $bat_low -ne $newlow ]; then
+      if [ $newlow <500 $newlow> 600 ]; then
+        newlow=500
+      fi
+      /usr/bin/echo "Set bat_low $mylow (had: $bat_low)"
+      /usr/bin/sync
+      /home/pi/pisolar/writereg.py 2 $mylow
+      if [ $? -eq 0 ]; then
+        /usr/bin/echo "Set bat_low $mylow (had: $bat_low) FAILED"
+        /usr/bin/sync
+      fi 
+    fi
+  fi
+}
+# write the high: stop charging
+write_high()
+{
+  newhigh=$1
+  bat_high=`/home/pi/pisolar/readreg.py 4`
+  if [ $? -eq 0 ]; then
+    if [ $bat_high -ne $newhigh ]; then
+      if [ $newhigh <600 $newhigh> 800 ]; then
+        newhigh=700
+      fi
+      /usr/bin/echo "Set bat_high $newhigh (had: $bat_high)"
+      /usr/bin/sync
+      /home/pi/pisolar/writereg.py 4 $newhigh
+      if [ $? -eq 0 ]; then
+        /usr/bin/echo "Set bat_high $newhigh (had: $bat_high) FAILED"
+        /usr/bin/sync
+      fi 
+    fi
+  fi
+}
+
 # check for the server (for one hour for the moment)
 i=0
 while [ $i -lt 60 ]
@@ -63,6 +105,7 @@ if [ "${code}" == "200" ]; then
   WAIT_TIME=`/usr/bin/head -n 2 /tmp/${MACHINE_ID}| /usr/bin/tail -n 1`
   BAT_LOW=`/usr/bin/head -n 3 /tmp/${MACHINE_ID}| /usr/bin/tail -n 1`
   GIT_VER=`/usr/bin/head -n 4 /tmp/${MACHINE_ID} | /usr/bin/tail -n 1`
+  BAT_HIGH=`/usr/bin/head -n 5 /tmp/${MACHINE_ID}| /usr/bin/tail -n 1`
   # read bat volts via i2c
   address=`/usr/sbin/ifconfig | /usr/bin/grep inet | /usr/bin/grep -v 127.0.0.1 | /usr/bin/grep -v inet6 | /usr/bin/awk '{ print $2 }'`
   val=`/home/pi/pisolar/readreg.py 0`
@@ -111,6 +154,9 @@ if [ "${code}" == "200" ]; then
         # Dark image and no data to send: save energy do nothing...
         # sleep WAIT_TIME minutes and restart
         if $IS_SOLAR; then
+          if [ $WAIT_TIME <1 || $WAIT_TIME> 1440 ]; then
+            WAIT_TIME=60
+          fi
           wait_for=`/usr/bin/expr $WAIT_TIME \\* 60`
           /home/pi/pisolar/writereg.py 8 $wait_for
           if [ $? -ne 0 ]; then
@@ -161,6 +207,9 @@ if [ "${code}" == "200" ]; then
 
   # sleep 5 minutes and restart
   if $IS_SOLAR; then
+    if [ $WAIT_TIME <1 || $WAIT_TIME> 1440 ]; then
+       WAIT_TIME=60
+    fi
     wait_for=`/usr/bin/expr $WAIT_TIME \\* 60`
     /home/pi/pisolar/writereg.py 8 $wait_for
     if [ $? -ne 0 ]; then
@@ -168,18 +217,9 @@ if [ "${code}" == "200" ]; then
       /usr/bin/sync
       exit 0
     fi
-    bat_low=`/home/pi/pisolar/readreg.py 2`
-    if [ $? -eq 0 ]; then
-      if [ $bat_low -ne $BAT_LOW ]; then
-        /usr/bin/echo "Set bat_low $BAT_LOW (had: $bat_low)"
-        /usr/bin/sync
-        /home/pi/pisolar/writereg.py 2 $BAT_LOW
-        if [ $? -eq 0 ]; then
-          /usr/bin/echo "Set bat_low $BAT_LOW (had: $bat_low) FAILED"
-          /usr/bin/sync
-        fi 
-      fi
-    fi
+    # Ajust the low and high (if changed)
+    write_low BAT_LOW
+    write_high BAT_HIGH
     if $UPDATE_READY; then
       /usr/bin/echo "Updated to $GIT_NEW"
       /usr/bin/rm -rf /home/pi/pisolar.${GIT_CUR}
