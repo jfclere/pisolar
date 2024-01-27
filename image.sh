@@ -21,7 +21,7 @@ write_low()
   bat_low=`/home/pi/pisolar/readreg.py 2`
   if [ $? -eq 0 ]; then
     if [ $bat_low -ne $newlow ]; then
-      if [ $newlow <500 $newlow> 600 ]; then
+      if [ $newlow -lt 500 -o $newlow -gt 600 ]; then
         newlow=500
       fi
       /usr/bin/echo "Set bat_low $mylow (had: $bat_low)"
@@ -41,7 +41,7 @@ write_high()
   bat_high=`/home/pi/pisolar/readreg.py 4`
   if [ $? -eq 0 ]; then
     if [ $bat_high -ne $newhigh ]; then
-      if [ $newhigh <600 $newhigh> 800 ]; then
+      if [ $newhigh -lt 600 -o  $newhigh -gt 800 ]; then
         newhigh=700
       fi
       /usr/bin/echo "Set bat_high $newhigh (had: $bat_high)"
@@ -154,7 +154,7 @@ if [ "${code}" == "200" ]; then
         # Dark image and no data to send: save energy do nothing...
         # sleep WAIT_TIME minutes and restart
         if $IS_SOLAR; then
-          if [ $WAIT_TIME <1 || $WAIT_TIME> 1440 ]; then
+          if [ $WAIT_TIME -lt 1 -o $WAIT_TIME -gt 1440 ]; then
             WAIT_TIME=60
           fi
           wait_for=`/usr/bin/expr $WAIT_TIME \\* 60`
@@ -201,13 +201,14 @@ if [ "${code}" == "200" ]; then
       # we have the new version checked out in /home/pi/pisolar.new
       /usr/bin/echo "Will to update to $GIT_NEW"
       /usr/bin/sync
-      UPDATE_READY=true
+      # UPDATE_READY=true
+      UPDATE_READY=false
     fi
   fi 
 
   # sleep 5 minutes and restart
   if $IS_SOLAR; then
-    if [ $WAIT_TIME <1 || $WAIT_TIME> 1440 ]; then
+    if [ $WAIT_TIME -lt 1 -o $WAIT_TIME -gt 1440 ]; then
        WAIT_TIME=60
     fi
     wait_for=`/usr/bin/expr $WAIT_TIME \\* 60`
@@ -237,7 +238,35 @@ if [ "${code}" == "200" ]; then
       /usr/bin/mv /home/pi/pisolar.new /home/pi/pisolar
       /usr/bin/sync
     fi
-    #/usr/bin/at -f /home/pi/pisolar/image.bash now + $WAIT_TIME minute
+    # We use crontab
+    UPDATE_CRON=true
+    /usr/bin/crontab -l > /tmp/crontab
+    /usr/bin/echo "Setting crontab for $WAIT_TIME"
+    if [ $WAIT_TIME -lt 1 -o $WAIT_TIME -gt 59 ]; then
+      WAIT_TIME=1
+    fi
+    /usr/bin/grep image /tmp/crontab
+    if [ $? -eq 0 ]; then
+      # is the value OK
+      oldwait=`/usr/bin/awk '{ print $1 }' /tmp/crontab`
+      /usr/bin/echo "Old value: $oldwait"
+      if [ $oldwait -eq $WAIT_TIME ]; then
+        /usr/bin/echo "Wait time unchanged"
+        UPDATE_CRON=false
+      fi
+    fi
+    if $UPDATE_CRON; then
+      if [ $WAIT_TIME -eq 1 ]; then
+        /usr/bin/echo "* * * * * /home/pi/pisolar/image.sh" > /tmp/crontab
+        /usr/bin/crontab /tmp/crontab
+        /usr/bin/echo "After crontab!"
+      else
+        /usr/bin/echo "*/$WAIT_TIME * * * * /home/pi/pisolar/image.sh" > /tmp/crontab
+        /usr/bin/crontab /tmp/crontab
+        /usr/bin/echo "After crontab"
+      fi
+    fi
+    /usr/bin/echo "Done!"
   fi
 else
   /usr/bin/echo "FAILED: code: ${code}!!!"
