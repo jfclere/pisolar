@@ -201,8 +201,7 @@ if [ "${code}" == "200" ]; then
       # we have the new version checked out in /home/pi/pisolar.new
       /usr/bin/echo "Will to update to $GIT_NEW"
       /usr/bin/sync
-      # UPDATE_READY=true
-      UPDATE_READY=false
+      UPDATE_READY=true
     fi
   fi 
 
