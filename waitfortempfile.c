@@ -18,10 +18,17 @@ struct info {
    float pres;
    float humi;
 };
+struct gasinfo {
+   float no2;
+   float alcohol;
+   float voc;
+   float co;
+};
 
 int debug = 0;
 
 void inserttemp(char *table, time_t t, float temp, float pres, float humi);
+void insertgas(char *table, time_t t, float no2, float alcohol, float voc, float co);
 
 /* read the Temperature, Pressure and Humidity from the temp.txt file */
 static int readtempfile(char *filename, struct info *info) {
@@ -46,6 +53,34 @@ static int readtempfile(char *filename, struct info *info) {
    fclose(fptr); 
    free(input);
    if (ret == 3)
+       return 0;
+   return 1;
+}
+static int readgasfile(char *filename, struct gasinfo *info) {
+   FILE *fptr = fopen(filename, "r");
+   if (!fptr)
+       return 1;
+   size_t size = 100;
+   char *input = malloc(100);
+   int ret = 0;
+   while (fgets(input, size, fptr)>0) {
+       if (strstr(input, "no2")) {
+           info->no2 = readval(input);
+           ret++;
+       } else if (strstr(input, "alcohol")) {
+           info->alcohol = readval(input);
+           ret++;
+       } else if (strstr(input, "voc")) {
+           info->voc = readval(input);
+           ret++;
+       } if (strstr(input, "co")) {
+           info->co = readval(input);
+           ret++;
+       }
+   }
+   fclose(fptr);
+   free(input);
+   if (ret == 4)
        return 0;
    return 1;
 }
@@ -106,6 +141,20 @@ int main(int argc, char **argv){
                            if (debug)
                                printf("%d %f %f %f\n", t, info.temp, info.pres, info.humi);
                            inserttemp(table, t, info.temp, info.pres, info.humi);
+                       }
+                   }
+                   if (!strcmp(event->name, "gas.txt")) {
+                       /* The has changed let's tell the world */
+                       struct gasinfo info;
+                       char fullname[100];
+                       strcpy(fullname, path_to_be_watched);
+                       strcat(fullname, "/gas.txt");
+                       int err = readgasfile(fullname, &info);
+                       if (!err) {
+                           time_t t = time(NULL);
+                           if (debug)
+                               printf("%d %f %f %f\n", t, info.no2, info.alcohol, info.voc, info.co);
+                           insertgas(table, t, info.no2, info.alcohol, info.voc, info.co);
                        }
                    }
                } else {
