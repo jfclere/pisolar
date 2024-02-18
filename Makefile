@@ -5,4 +5,4 @@ inserttemp.o: inserttemp.c
 insertgas.o: insertgas.c
 	cc -c insertgas.c
 waitfordatafile: waitfortempfile.o insertgas.o inserttemp.o
-	cc -o waitforgasfile waitfortempfile.o insertgas.o inserttemp.o -lpq
+	cc -o waitfordatafile waitfortempfile.o insertgas.o inserttemp.o -lpq

@@ -90,6 +90,9 @@ int main(int argc, char **argv){
         printf("Need directory name and table name\n");
         exit(1);
     }
+    if (getenv("DEBUG")) {
+        debug = 1;
+    }
     char *path_to_be_watched = argv[1];
     char *table = argv[2];
 
@@ -141,6 +144,9 @@ int main(int argc, char **argv){
                            if (debug)
                                printf("%d %f %f %f\n", t, info.temp, info.pres, info.humi);
                            inserttemp(table, t, info.temp, info.pres, info.humi);
+                       } else {
+                           if (debug)
+                               printf("file: %s ERROR reading %d\n", event->name, err);
                        }
                    }
                    if (!strcmp(event->name, "gas.txt")) {
@@ -155,6 +161,9 @@ int main(int argc, char **argv){
                            if (debug)
                                printf("%d %f %f %f\n", t, info.no2, info.alcohol, info.voc, info.co);
                            insertgas(table, t, info.no2, info.alcohol, info.voc, info.co);
+                       } else {
+                           if (debug)
+                               printf("file: %s ERROR reading %d\n", event->name, err);
                        }
                    }
                } else {
