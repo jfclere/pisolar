@@ -32,14 +32,14 @@ void insertgas(char *table, time_t t, float no2, float alcohol, float voc, float
         exit(1);
     }
     char sinto[100];
-    sprintf(sinto, "INSERT INTO %s VALUES($1,$2,$3,$4)", table);
+    sprintf(sinto, "INSERT INTO %s VALUES($1,$2,$3,$4,$5)", table);
     char p1[100], p2[100], p3[100], p4[100], p5[100];
     const char *paramValues[] = { p1, p2, p3, p4, p5 };
     sprintf(p1, "%d", t);
     sprintf(p2, "%4.2f", no2);
     sprintf(p3, "%4.2f", alcohol);
     sprintf(p4, "%4.2f", voc);
-    sprintf(p4, "%4.2f", co);
+    sprintf(p5, "%4.2f", co);
     printf("doing %s %s %s %s %s %s\n", sinto, p1, p2, p3, p4, p5);
     // make call to database server
     PGresult *res = PQexecParams(conn, sinto, 5, NULL, paramValues, NULL, NULL, 0);

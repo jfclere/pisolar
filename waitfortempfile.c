@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <time.h>
+#include <zlib.h>
 
 static float readval(char *input) {
    char s[100], u[10];
@@ -29,6 +30,21 @@ int debug = 0;
 
 void inserttemp(char *table, time_t t, float temp, float pres, float humi);
 void insertgas(char *table, time_t t, float no2, float alcohol, float voc, float co);
+
+static int getsumfile(char *filename) {
+   FILE *fptr = fopen(filename, "r");
+   if (!fptr)
+       return 0;
+   size_t size = 100;
+   char *input = malloc(100);
+   int sum = 0;
+   while (fgets(input, size, fptr)>0) {
+       sum  = sum + crc32(0x80000000, input, strlen(input));
+   }
+   fclose(fptr); 
+   free(input);
+   return sum;
+}
 
 /* read the Temperature, Pressure and Humidity from the temp.txt file */
 static int readtempfile(char *filename, struct info *info) {
@@ -58,24 +74,34 @@ static int readtempfile(char *filename, struct info *info) {
 }
 static int readgasfile(char *filename, struct gasinfo *info) {
    FILE *fptr = fopen(filename, "r");
-   if (!fptr)
+   if (!fptr) {
+       if (debug)
+           printf("readgasfile: open %s failed\n", filename);
        return 1;
+   }
    size_t size = 100;
    char *input = malloc(100);
    int ret = 0;
    while (fgets(input, size, fptr)>0) {
-       if (strstr(input, "no2")) {
+       if (strstr(input, "No2")) {
            info->no2 = readval(input);
            ret++;
-       } else if (strstr(input, "alcohol")) {
+           if (debug)
+               printf("readgasfile: got No2\n");
+       } else if (strstr(input, "Alcohol")) {
            info->alcohol = readval(input);
            ret++;
-       } else if (strstr(input, "voc")) {
+           if (debug)
+               printf("readgasfile: got Alcohol\n");
+       } else if (strstr(input, "Voc")) {
            info->voc = readval(input);
            ret++;
-       } if (strstr(input, "co")) {
+           if (debug)
+               printf("readgasfile: got Voc\n");
+       } if (strstr(input, "Co")) {
            info->co = readval(input);
            ret++;
+           printf("readgasfile: got Co\n");
        }
    }
    fclose(fptr);
@@ -111,12 +137,15 @@ int main(int argc, char **argv){
     int size = strlen(path_to_be_watched) + 1 + sizeof(sizeof (struct inotify_event));
     size = 1024 * 2;
     char *buffer = malloc(size);
+    int checksum = 0;
     while(1) {
        int ret = read(fd,buffer,size);
        if (ret < 0) {
            printf("read failed\n");
            break; /* something wrong */
        }
+       if (debug)
+           printf("read: %d with events\n", ret);
        int offset = 0;
        while (ret>0) {
            struct inotify_event *event = (struct inotify_event *) &buffer[offset];
@@ -133,7 +162,7 @@ int main(int argc, char **argv){
                    if (debug)
                        printf("file: %s modified or moved\n", event->name);
                    if (!strcmp(event->name, "temp.txt")) {
-                       /* The has changed let's tell the world */
+                       /* If the fle has changed let's tell the world */
                        struct info info;
                        char fullname[100];
                        strcpy(fullname, path_to_be_watched);
@@ -143,14 +172,18 @@ int main(int argc, char **argv){
                            time_t t = time(NULL);
                            if (debug)
                                printf("%d %f %f %f\n", t, info.temp, info.pres, info.humi);
-                           inserttemp(table, t, info.temp, info.pres, info.humi);
+                           int sum = getsumfile(fullname);
+                           if (sum != checksum) {
+                               inserttemp(table, t, info.temp, info.pres, info.humi);
+                               checksum = sum;
+                           }
                        } else {
                            if (debug)
                                printf("file: %s ERROR reading %d\n", event->name, err);
                        }
                    }
                    if (!strcmp(event->name, "gas.txt")) {
-                       /* The has changed let's tell the world */
+                       /* If the fle has changed let's tell the world */
                        struct gasinfo info;
                        char fullname[100];
                        strcpy(fullname, path_to_be_watched);
@@ -159,8 +192,12 @@ int main(int argc, char **argv){
                        if (!err) {
                            time_t t = time(NULL);
                            if (debug)
-                               printf("%d %f %f %f\n", t, info.no2, info.alcohol, info.voc, info.co);
-                           insertgas(table, t, info.no2, info.alcohol, info.voc, info.co);
+                               printf("%d %f %f %f %f\n", t, info.no2, info.alcohol, info.voc, info.co);
+                           int sum = getsumfile(fullname);
+                           if (sum != checksum) {
+                               insertgas(table, t, info.no2, info.alcohol, info.voc, info.co);
+                               checksum = sum;
+                           }
                        } else {
                            if (debug)
                                printf("file: %s ERROR reading %d\n", event->name, err);
