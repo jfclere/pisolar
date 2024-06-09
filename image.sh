@@ -10,6 +10,7 @@
 # read machine-id and check for tmp file if we have not reboot we are probably on AC power device.
 MACHINE_ID=`/usr/bin/cat /etc/machine-id`
 IS_SOLAR=true
+IS_ERROR=false
 SERVER=`/usr/bin/grep machine $HOME/.netrc | /usr/bin/awk ' { print $2 } '`
 UPDATE_READY=false
 
@@ -115,11 +116,28 @@ if [ "${code}" == "200" ]; then
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/reportold-${MACHINE_ID}-${oldval}
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${val}
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${address}
+    /usr/bin/touch /home/pi/IS_SOLAR
   else
     IS_SOLAR=false
+    if [ -f /home/pi/IS_SOLAR ]; then
+      # we have a problem... the connection to the ATTiny I2C is lost...
+      IS_ERROR=true
+    fi
     /usr/bin/echo "ERROR readreg.py 0"
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${address}
     /usr/bin/sync
+  fi
+
+  # Create directory and report I2C error if needed
+  /usr/bin/echo "mkcol ${REMOTE_DIR}" > /tmp/cmd.txt
+  if $IS_ERROR; then
+    FILE=`/usr/bin/date +%Y%m%d/%H00/%Y%m%d%H%M%S.txt`
+    DIR=`/usr/bin/dirname ${FILE}`
+    BASEDIR=`/usr/bin/dirname ${DIR}`
+    /usr/bin/journalctl -u image > /tmp/error.txt
+    /usr/bin/echo "mkcol ${REMOTE_DIR}/${BASEDIR}" >> /tmp/cmd.txt
+    /usr/bin/echo "mkcol ${REMOTE_DIR}/${DIR}" >> /tmp/cmd.txt
+    /usr/bin/echo "put /tmp/error.txt ${REMOTE_DIR}/${FILE}" >> /tmp/cmd.txt
   fi
 
   # take a picture and send it.
@@ -136,7 +154,6 @@ if [ "${code}" == "200" ]; then
   # /usr/bin/raspistill -o /tmp/now.jpg
   /usr/bin/libcamera-still -o /tmp/now.jpg
   if [ $? -eq 0 ]; then
-    /usr/bin/echo "mkcol ${REMOTE_DIR}" > /tmp/cmd.txt
     /usr/bin/python /home/pi/pisolar/bme280.py > /tmp/temp.txt
     if [ $? -eq 0 ]; then
       /usr/bin/echo "put /tmp/temp.txt ${REMOTE_DIR}/temp.txt" >> /tmp/cmd.txt
@@ -180,7 +197,6 @@ if [ "${code}" == "200" ]; then
     /usr/bin/echo "Can't read image"
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${address}
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/reportold-${MACHINE_ID}-camerapb
-    /usr/bin/echo "mkcol ${REMOTE_DIR}" > /tmp/cmd.txt
     /usr/bin/journalctl -u image > /tmp/temp.txt
     /usr/bin/echo "put /tmp/temp.txt ${REMOTE_DIR}/temp.txt" >> /tmp/cmd.txt
     /usr/bin/cadaver https://${SERVER}/webdav/ < /tmp/cmd.txt
