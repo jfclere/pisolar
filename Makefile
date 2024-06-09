@@ -1,6 +1,12 @@
 waitfortempfile.o: waitfortempfile.c
 	cc -c waitfortempfile.c
+waitfortmess.o: waitfortmess.c
+	cc -c waitformess.c
 inserttemp.o: inserttemp.c
 	cc -c inserttemp.c
-waitfortempfile: waitfortempfile.o inserttemp.o
-	cc -o waitfortempfile waitfortempfile.o inserttemp.o -lpq
+insertgas.o: insertgas.c
+	cc -c insertgas.c
+waitfordatafile: waitfortempfile.o insertgas.o inserttemp.o
+	cc -o waitfordatafile waitfortempfile.o insertgas.o inserttemp.o -lpq -lz
+waitfordatamess: waitformess.o insertgas.o inserttemp.o
+	cc -o waitfordatamess waitformess.o insertgas.o inserttemp.o -lpq -lz -lpaho-mqtt3as

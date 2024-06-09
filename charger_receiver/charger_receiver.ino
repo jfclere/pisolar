@@ -35,8 +35,8 @@ bool start_conversion = true;
 /* 3V according to divisor (1000+220)/220 = 5.5454 and ref = 1.1V */
 /* 505/1024*1.1*5.5454 = 3.0805 V */
 /* according to my testa until around 440 = 2.621 V the USB is stable */ 
-#define BATCHARGED 773 /* 700 seems to make 3.8V,  773 would be 4.2 */
-#define BATLOW 504 /* 440 : 2.626 too low compare to 3.0v/cell. 600: 3.93 V 504 ~ 3 V*/ 
+#define BATCHARGED 800 /* 700 seems to make 3.8V,  773 would be 4.2 */
+#define BATLOW 600 /* 440 : 2.626 too low compare to 3.0v/cell. 600: 3.93 V 504 ~ 3 V*/ 
 
 volatile byte reg_position;
 volatile uint8_t i2c_regs[17];

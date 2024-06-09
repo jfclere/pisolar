@@ -22,7 +22,7 @@
  *
  */
 
-void do_exit(PGconn *conn, PGresult *res) {
+static void do_exit(PGconn *conn, PGresult *res) {
     fprintf(stderr, "%s\n", PQerrorMessage(conn));    
     PQclear(res);
     PQfinish(conn);    
