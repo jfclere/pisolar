@@ -2,7 +2,7 @@
 
 # install git and other tools we need.
 sudo apt-get update
-sudo apt-get -y install git cadaver libcamera-apps python3-smbus at
+sudo apt-get -y install git cadaver libcamera-apps python3-smbus at python3-opencv
 # checkout the repo
 cd /home/pi
 git clone https://github.com/jfclere/pisolar.git

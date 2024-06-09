@@ -249,6 +249,9 @@ if [ "${code}" == "200" ]; then
       # is the value OK
       oldwait=`/usr/bin/awk '{ print $1 }' /tmp/crontab`
       /usr/bin/echo "Old value: $oldwait"
+      if [ "$oldwait" = "*" ]; then
+        oldwait=1
+      fi
       if [ $oldwait -eq $WAIT_TIME ]; then
         /usr/bin/echo "Wait time unchanged"
         UPDATE_CRON=false
