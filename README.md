@@ -8,7 +8,7 @@ See https://docs.arduino.cc/software/ide-v1/tutorials/Linux
 # prepare the SDcard for the PI:
 In the laptop make sure the SDcard is not mounted and copy the image.
 ```bash
-dd bs=4M if=2023-05-03-raspios-bullseye-armhf-lite.img of=/dev/mmcblk0 conv=fsync
+dd bs=4M if=2024-07-04-raspios-bookworm-armhf-lite.img of=/dev/mmcblk0 conv=fsync
 ```
 remove and reinsert the SDcard in the laptop (it will mount automatically otherwise mount boot and root by hands).
 create the following files (See https://github.com/jfclere/pisolar#making-the-raspberry-an-object):
