@@ -16,7 +16,7 @@ class readreg:
   def read(self, wait):
     # we can 0, 2, 4, 6, 8 or 16
     if wait == 0 or wait == 2 or wait == 4 or wait == 6 :
-      # read val, batlow, batcharged
+      # read val, batlow, batcharged and value at start.
       self.bus.write_byte(DEVICE, wait)
       reply0 = int(self.bus.read_byte(DEVICE))
       reply1 = int(self.bus.read_byte(DEVICE))
