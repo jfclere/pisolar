@@ -9,7 +9,7 @@
 #define SHUTDOWNTIME 30000UL
 #define WAITFACTOR 1000UL
 #define MAXUPTIME 21600000UL
-#define KEEPOFFTIME 10UL
+#define KEEPOFFTIME 10ULL
 
 int sum = 0; // sum
 int count = 0;
@@ -45,7 +45,7 @@ unsigned short 	*batlow;
 unsigned short 	*batcharged;
 unsigned short 	*val; // medium value
 unsigned short  *valstart; // value when the PI has been switched on
-unsigned long *stopfor;
+unsigned long long *stopfor;
 
 unsigned long uptime = 0;   // time when the RPI started
 unsigned long waittime = 0; // time when the wait for wait for shutdown started
@@ -66,11 +66,11 @@ void setup()
   batlow = (unsigned short *) &i2c_regs[2];
   batcharged = (unsigned short *) &i2c_regs[4];
   valstart = (unsigned short *) &i2c_regs[6];
-  stopfor = (unsigned long *) &i2c_regs[8];
+  stopfor = (unsigned long long *) &i2c_regs[8];
   i2c_regs[TESTMODEOFFSET] = AUTO;
   *batlow = BATLOW;
   *batcharged = BATCHARGED;
-  *stopfor = 0;  
+  *stopfor = 0ULL;  
 }
 
 void loop()
@@ -115,13 +115,22 @@ void loop()
      return;
   
   // stop and sleep.
-  if (*stopfor != 0) {
+  if (*stopfor != 0ULL) {
     // We have received a stop for the PI
     unsigned long currentMillis = millis();
+    // millis() wrap around to 0 after about 49 days
+    unsigned long waited;
+    if (waittime>currentMillis) {
+      // we wrapped around 0.
+      waited = 4294967295UL - waittime;
+      waited = waited + currentMillis;
+    } else {
+      waited = currentMillis - waittime;
+    } 
     if (ispion) {
       if (waittime) {
         // give time to stop.
-        if (currentMillis - waittime > SHUTDOWNTIME) {
+        if (waited > SHUTDOWNTIME) {
           digitalWrite(ledred, LOW); // disable 5 V USB.
           ispion = false;
           waittime = currentMillis;
@@ -131,7 +140,7 @@ void loop()
       }
     } else {
       /* wait for WAITFACTOR * stopfor */
-      if (currentMillis - waittime > WAITFACTOR) {
+      if (waited > WAITFACTOR) {
         waittime = currentMillis;
         *stopfor = *stopfor -1;
       }
@@ -167,7 +176,16 @@ void loop()
       /* The PI is on, make sure it doesn't drain for ever */
       if (uptime) {
         unsigned long currentMillis = millis();
-        if (currentMillis - uptime > MAXUPTIME) {
+        // millis() wrap around to 0 after about 49 days
+        unsigned long waited;
+        if (uptime>currentMillis) {
+          // we wrapped around 0.
+          waited = 4294967295UL - uptime;
+          waited = waited + currentMillis;
+        } else {
+          waited = currentMillis - uptime;
+        }     
+        if (waited > MAXUPTIME) {
           /* After 6 hours */
           *stopfor = KEEPOFFTIME; /* stop for SHUTDOWNTIME + 10*WAITFACTOR */
           uptime = 0;
@@ -175,6 +193,7 @@ void loop()
       }
     }
   }
+  return;
 }
 
 // function that executes whenever data is received from master
