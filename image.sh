@@ -118,10 +118,20 @@ if [ "${code}" == "200" ]; then
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${address}
     /usr/bin/touch /home/pi/IS_SOLAR
   else
-    IS_SOLAR=false
     if [ -f /home/pi/IS_SOLAR ]; then
       # we have a problem... the connection to the ATTiny I2C is lost...
       IS_ERROR=true
+      /usr/bin/echo "ERROR readreg.py 0 retrying..."
+      for run in {1..10}
+      do
+        /usr/bin/sleep 10
+        val=`/home/pi/pisolar/readreg.py 0`
+        if [ $? -eq 0 ]; then
+          break
+        fi
+      done
+    else
+      IS_SOLAR=false
     fi
     /usr/bin/echo "ERROR readreg.py 0"
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${address}
@@ -265,8 +275,11 @@ if [ "${code}" == "200" ]; then
       # is the value OK
       oldwait=`/usr/bin/awk '{ print $1 }' /tmp/crontab`
       /usr/bin/echo "Old value: $oldwait"
-      if [ "$oldwait" = "*" ]; then
+      if [ "$oldwait" == "*" ]; then
         oldwait=1
+      else
+        oldwait=`/usr/bin/echo $l | /usr/bin/awk -F / ' { print $2 } '`
+        /usr/bin/echo "Old value: $oldwait"
       fi
       if [ $oldwait -eq $WAIT_TIME ]; then
         /usr/bin/echo "Wait time unchanged"
