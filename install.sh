@@ -9,10 +9,12 @@ while IFS= read -r line; do
   case "$line" in
      *ssid=*)
        ssid=`echo $line | awk -F = ' { print $2 } '`
+       ssid=`echo $ssid | sed "s/\"//g"`
        has_ssid=true
        ;;
      *psk=*)
        psk=`echo $line | awk -F = ' { print $2 } '`
+       psk=`echo $psk | sed "s/\"//g"`
        has_psk=true
        ;;
      *key_mgmt=*)
