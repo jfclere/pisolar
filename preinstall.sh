@@ -15,7 +15,8 @@ touch $BOOT_DIR/ssh
 if [ -f $HOME/wpa_supplicant.conf ]; then
   # that doesn't work with bookworm
   cp $HOME/wpa_supplicant.conf $BOOT_DIR/
-  cp $HOME/wpa_supplicant.conf $ROOT_DIR/home/pi
+  sudo cp $HOME/wpa_supplicant.conf $ROOT_DIR/home/pi
+  sudo chown 1000:1000 $ROOT_DIR/home/pi/wpa_supplicant.conf
 else
   echo "Missing $HOME/wpa_supplicant.conf"
 fi
