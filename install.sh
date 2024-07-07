@@ -1,5 +1,44 @@
 #!/bin/bash
 
+# first install wifi information from /home/pi/wpa_supplicant.conf
+# convert wpa_supplicant.conf in nmcli commands
+has_ssid=false
+has_psk=false
+has_key_mgmt=false
+while IFS= read -r line; do
+  case "$line" in
+     *ssid=*)
+       ssid=`echo $line | awk -F = ' { print $2 } '`
+       has_ssid=true
+       ;;
+     *psk=*)
+       psk=`echo $line | awk -F = ' { print $2 } '`
+       has_psk=true
+       ;;
+     *key_mgmt=*)
+       key_mgmt=`echo $line | awk -F = ' { print $2 } '`
+       has_key_mgmt=true
+       ;;
+  esac
+  if $has_ssid && $has_psk && $has_key_mgmt; then
+    has_ssid=false
+    has_psk=false
+    has_key_mgmt=false
+    name=`echo $ssid | awk -F \" ' { print $2 } '`
+    sudo nmcli connection add type wifi con-name $name wifi.ssid $ssid wifi-sec.key-mgmt $key_mgmt  wifi-sec.psk $psk
+  fi
+done < /home/pi/wpa_supplicant.conf
+
+for run in {1..10}
+do
+  ssid=`iw wlan0 info | grep ssid | awk ' { print $2 } '`
+  if [ "x$ssid" = "x" ]; then
+    sleep 10
+    continue
+  fi
+  break
+done
+
 # install git and other tools we need.
 sudo apt-get update
 sudo apt-get -y install git cadaver libcamera-apps python3-smbus at python3-opencv

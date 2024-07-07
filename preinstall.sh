@@ -13,7 +13,9 @@ if [ -z $ROOT_DIR ]; then
 fi
 touch $BOOT_DIR/ssh
 if [ -f $HOME/wpa_supplicant.conf ]; then
+  # that doesn't work with bookworm
   cp $HOME/wpa_supplicant.conf $BOOT_DIR/
+  cp $HOME/wpa_supplicant.conf $ROOT_DIR/home/pi
 else
   echo "Missing $HOME/wpa_supplicant.conf"
 fi
