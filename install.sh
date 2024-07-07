@@ -25,7 +25,7 @@ while IFS= read -r line; do
     has_psk=false
     has_key_mgmt=false
     name=`echo $ssid | awk -F \" ' { print $2 } '`
-    sudo nmcli connection add type wifi con-name $name wifi.ssid $ssid wifi-sec.key-mgmt $key_mgmt  wifi-sec.psk $psk
+    sudo nmcli connection add type wifi con-name $name wifi.ssid $ssid wifi-sec.key-mgmt $key_mgmt  wifi-sec.psk $psk connection.interface-name wlan0
   fi
 done < /home/pi/wpa_supplicant.conf
 
