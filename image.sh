@@ -14,6 +14,41 @@ IS_ERROR=false
 SERVER=`/usr/bin/grep machine $HOME/.netrc | /usr/bin/awk ' { print $2 } '`
 UPDATE_READY=false
 
+# first install wifi information from /home/pi/wpa_supplicant.conf
+# convert wpa_supplicant.conf in nmcli commands
+getpass() {
+sid=$1
+has_ssid=false
+has_psk=false
+has_key_mgmt=false
+while IFS= read -r line; do
+  case "$line" in
+     *ssid=*)
+       ssid=`/usr/bin/echo $line | awk -F = ' { print $2 } '`
+       has_ssid=true
+       ;;
+     *psk=*)
+       psk=`/usr/bin/echo $line | awk -F = ' { print $2 } '`
+       has_psk=true
+       ;;
+     *key_mgmt=*)
+       key_mgmt=`/usr/bin/echo $line | awk -F = ' { print $2 } '`
+       has_key_mgmt=true
+       ;;
+  esac
+  if $has_ssid && $has_psk && $has_key_mgmt; then
+    has_ssid=false
+    has_psk=false
+    has_key_mgmt=false
+    name=`/usr/bin/echo $ssid | awk -F \" ' { print $2 } '`
+    if [ "$sid" = "$name" ]; then
+      pass=`/usr/bin/echo $psk | awk -F \" ' { print $2 } '`
+      /usr/bin/echo "$pass"
+    fi
+  fi
+done < /home/pi/wpa_supplicant.conf
+}
+
 #
 # write the low: start the logic
 write_low()
@@ -56,6 +91,35 @@ write_high()
   fi
 }
 
+#
+# Check for wifi
+checkstartwifi()
+{
+  /usr/sbin/iw wlan0 link | /usr/bin/grep SSID > /dev/null
+  if [ $? -ne 0 ]; then
+    # We don't have a connection...
+    # Check for bookworm, if yes wifi can be not yet configured.
+    OSVER=`/usr/bin/grep VERSION_ID= /etc/os-release | /usr/bin/awk -F = ' { print $2 } '`
+    OSVERID=`echo $OSVER`
+    if [ $OSVERID -eq 12 ]; then
+      /usr/bin/echo "bookworm!!!"
+      # Try to connect to one of wifi we can see
+      for sid in `/usr/bin/nmcli -t -f SSID device wifi`
+      do
+        /usr/bin/echo "sid: $sid"
+        pass=`getpass $sid`
+        if [ "x$pass" = "x" ]; then
+          /usr/bin/echo "Ignore $sid not in our list"
+        else
+          /usr/bin/echo "trying $sid $pass"
+          /usr/bin/sudo /usr/bin/nmcli device wifi connect $sid password $pass
+        fi
+      done
+    fi
+  fi
+}
+
+#
 # check for the server (for one hour for the moment)
 i=0
 while [ $i -lt 60 ]
@@ -63,6 +127,8 @@ do
   /usr/bin/ping -c 1 -W 10 ${SERVER}
   if [ $? -ne 0 ]; then
     /usr/bin/sleep 60
+    # configuration needed?
+    checkstartwifi
     /usr/bin/echo "Retrying ping ${SERVER}"
     /usr/bin/sync
   else
