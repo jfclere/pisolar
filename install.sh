@@ -1,7 +1,15 @@
 #!/bin/bash
 
+#
+# we need the NetworkManager
+sudo systemctl daemon-reload
+sudo systemctl stop wpa_supplicant
+sudo systemctl start NetworkManager
+
 # first install wifi information from /home/pi/wpa_supplicant.conf
 # convert wpa_supplicant.conf in nmcli commands
+getpass() {
+sid=$1
 has_ssid=false
 has_psk=false
 has_key_mgmt=false
@@ -9,12 +17,10 @@ while IFS= read -r line; do
   case "$line" in
      *ssid=*)
        ssid=`echo $line | awk -F = ' { print $2 } '`
-       ssid=`echo $ssid | sed "s/\"//g"`
        has_ssid=true
        ;;
      *psk=*)
        psk=`echo $line | awk -F = ' { print $2 } '`
-       psk=`echo $psk | sed "s/\"//g"`
        has_psk=true
        ;;
      *key_mgmt=*)
@@ -27,14 +33,45 @@ while IFS= read -r line; do
     has_psk=false
     has_key_mgmt=false
     name=`echo $ssid | awk -F \" ' { print $2 } '`
-    sudo nmcli connection add type wifi con-name $name wifi.ssid $ssid wifi-sec.key-mgmt $key_mgmt  wifi-sec.psk $psk connection.interface-name wlan0
+    if [ "$sid" = "$name" ]; then
+      pass=`echo $psk | awk -F \" ' { print $2 } '`
+      echo "$pass"
+    fi
   fi
 done < /home/pi/wpa_supplicant.conf
+}
 
-for run in {1..10}
+# wait until wifi is started
+while true
 do
-  ssid=`iw wlan0 info | grep ssid | awk ' { print $2 } '`
+  sid=`nmcli -t -f SSID device wifi`
+  if [ "$sid" = "" ]; then
+    sleep 10
+  else
+    echo "Wifi started!"
+    break
+  fi
+done
+
+# Try to connect to one of wifi we can see
+for sid in `nmcli -t -f SSID device wifi`
+do
+  echo "sid: $sid"
+  pass=`getpass $sid`
+  if [ "x$pass" = "x" ]; then
+    echo "Ignore $sid not in our list"
+  else
+    echo "trying $sid $pass"
+    sudo nmcli device wifi connect $sid password $pass
+  fi
+done
+
+for run in {1..666}
+do
+  iw dev wlan0 info
+  ssid=`iw dev wlan0 info | grep ssid | awk ' { print $2 } '`
   if [ "x$ssid" = "x" ]; then
+    # sudo nmcli device wifi connect 3307X0354 password adelina2006
     sleep 10
     continue
   fi
