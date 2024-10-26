@@ -141,6 +141,6 @@ if __name__=='__main__':
     print(info.GIT_VER)
     print(info.BATCHARGED)
     print(info.TIME_ACTIVE)
-    info.save_conf()
-    print("saved version: " + info.read_saved_version())
+    info.saveconf()
+    print("saved version: " + info.readsavedversion())
     print("Success")
