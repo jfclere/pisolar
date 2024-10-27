@@ -49,7 +49,7 @@ if net:
     s.close()
     mess = "IP :  " + str(val)
     mess = bytes(mess, 'utf-8')
-    url = "/webdav/ip.txt"
+    url = "/webdav/" + myinfo.REMOTE_DIR + "/ip.txt"
     mywifi = wifi.wifi()
     mywifi.sendserver(mess, url, myinfo.machine, 443, myinfo.login, myinfo.password)
   except Exception as ex:
