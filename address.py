@@ -11,7 +11,6 @@ import traceback
 import wifi
 
 from nodeinfo import nodeinfo
-from reportserver import reportserver
 
 # wait until we have an IP
 i = 1
