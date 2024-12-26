@@ -135,10 +135,25 @@ create_key()
   fi
 }
 
+# check the server key and add in .ssh/authorized_keys if needed.
+add_server_key()
+{
+  key=`/usr/bin/ssh-keyscan -t rsa $1 | /usr/bin/grep "ssh-rsa" | /usr/bin/awk ' { print $3 } '`
+  if [ ! -z "${key}" ]; then
+    authorized_keys=/home/pi/.ssh/authorized_keys
+    /usr/bin/grep ${key} ${authorized_keys} 2>/dev/null 1>/dev/null
+    if [ $? -ne 0 ]; then
+      /usr/bin/echo "ssh-rsa ${key}" >> ${authorized_keys}
+    fi
+  fi
+}
+
+
 # ssh to the server to allow a reversed connection (for 60 minutes) or wait 60 minutes
 #
 do_ssh()
 {
+  add_server_key $1
   create_key $1
   i=0
   while [ $i -lt 60 ]
