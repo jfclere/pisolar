@@ -119,6 +119,34 @@ checkstartwifi()
   fi
 }
 
+# create ssh if need
+create_key()
+{
+  /usr/bin/echo "Checking ssh key"
+  if [ ! -f /home/pi/.ssh/id_rsa.pub ]; then
+    # Creates it
+    /usr/bin/echo "Creating ssh key"
+    /usr/bin/ssh-keygen -t rsa -f /home/pi/.ssh/id_rsa -N ""
+  fi
+  /usr/bin/scp  -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" /home/pi/.ssh/id_rsa.pub pi@$1:
+  if [ $? -ne 0 ]; then
+    /usr/bin/echo "put /home/pi/.ssh/id_rsa.pub id_rsa.pub.txt" > /tmp/cmd.txt
+    /usr/bin/cadaver https://$1/webdav/ < /tmp/cmd.txt
+  fi
+}
+
+# ssh to the server to allow a reversed connection (for 60 minutes) or wait 60 minutes
+#
+do_ssh()
+{
+create_key $1
+/usr/bin/ssh  -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -R 2222:localhost:22 $1 -f 'sleep 3600'
+if [ $? -ne 0 ]; then
+  /usr/bin/echo "ssh failed waiting... "
+  sleep 3600
+fi
+}
+
 #
 # check for the server (for one hour for the moment)
 i=0
@@ -374,26 +402,30 @@ else
     address=`/usr/sbin/ifconfig | /usr/bin/grep inet | /usr/bin/grep -v 127.0.0.1 | /usr/bin/grep -v inet6 | /usr/bin/awk '{ print $2 }'`
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${address}
     /usr/bin/sync
+    # try to connect to the server or wait 60 minutes to allow manual connections...
+    do_ssh ${SERVER}
+    /usr/bin/sync
   else
     # Something wrong on the server
-    val=`/home/pi/pisolar/readreg.py 0`
+    /usr/bin/echo "Something wrong on the server ${code}"
+  fi
+  val=`/home/pi/pisolar/readreg.py 0`
+  if [ $? -eq 0 ]; then
+    # wait 5 minutes
+    /home/pi/pisolar/writereg.py 8 300 
     if [ $? -eq 0 ]; then
-      # wait 5 minutes
-      /home/pi/pisolar/writereg.py 8 300 
-      if [ $? -eq 0 ]; then
-        /usr/bin/echo "FAILED: can't return in wait mode!!!"
-        /usr/bin/sync
-        exit 0
-      else
-        /usr/bin/echo "Stopping poweroff"
-        /usr/bin/sync
-        /usr/bin/sudo /usr/sbin/poweroff
-      fi
-    else
-      # not solar just retry in a loop
-      /usr/bin/echo "Stopping reboot"
+      /usr/bin/echo "FAILED: can't return in wait mode!!!"
       /usr/bin/sync
-      /usr/bin/sudo /usr/sbin/reboot
+      exit 0
+    else
+      /usr/bin/echo "Stopping poweroff"
+      /usr/bin/sync
+      /usr/bin/sudo /usr/sbin/poweroff
     fi
+  else
+    # not solar just retry in a loop
+    /usr/bin/echo "Stopping reboot"
+    /usr/bin/sync
+    /usr/bin/sudo /usr/sbin/reboot
   fi
 fi
