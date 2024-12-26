@@ -139,12 +139,20 @@ create_key()
 #
 do_ssh()
 {
-create_key $1
-/usr/bin/ssh  -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -R 2222:localhost:22 $1 -f 'sleep 3600'
-if [ $? -ne 0 ]; then
-  /usr/bin/echo "ssh failed waiting... "
-  sleep 3600
-fi
+  create_key $1
+  i=0
+  while [ $i -lt 60 ]
+  do
+    /usr/bin/ssh  -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -R 2222:localhost:22 $1 -f 'sleep 3600'
+    if [ $? -ne 0 ]; then
+      /usr/bin/echo "ssh failed retrying... "
+      sleep 60
+    else
+      break
+    fi
+    i=`/usr/bin/expr $i + 1`
+  done
+  /usr/bin/sync
 }
 
 #
