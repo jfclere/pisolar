@@ -140,7 +140,7 @@ add_server_key()
 {
   code=`/usr/bin/curl https://$1/webdav/server.pub -o /tmp/server.pub --silent --write-out '%{http_code}'`
   if [ "${code}" == "200" ]; then
-    key=`/usr/bin/cat /tmp/server.pub | /usr/bin/grep "ssh-rsa" | /usr/bin/awk ' { print $3 } '`
+    key=`/usr/bin/cat /tmp/server.pub | /usr/bin/grep "ssh-rsa" | /usr/bin/awk ' { print $2 } '`
     if [ ! -z "${key}" ]; then
       authorized_keys=/home/pi/.ssh/authorized_keys
       /usr/bin/grep ${key} ${authorized_keys} 2>/dev/null 1>/dev/null
