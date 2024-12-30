@@ -100,7 +100,7 @@ checkstartwifi()
     # We don't have a connection...
     # Check for bookworm, if yes wifi can be not yet configured.
     OSVER=`/usr/bin/grep VERSION_ID= /etc/os-release | /usr/bin/awk -F = ' { print $2 } '`
-    OSVERID=`echo $OSVER`
+    OSVERID=`/usr/bin/echo $OSVER | /usr/bin/tr -d \"`
     if [ $OSVERID -eq 12 ]; then
       /usr/bin/echo "bookworm!!!"
       # Try to connect to one of wifi we can see
