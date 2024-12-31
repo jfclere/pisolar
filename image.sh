@@ -164,8 +164,11 @@ do_ssh()
     /usr/bin/ssh  -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -R 2222:localhost:22 $1 -f 'sleep 3600'
     if [ $? -ne 0 ]; then
       /usr/bin/echo "ssh failed retrying... "
+      /usr/bin/sync
       sleep 60
     else
+      /usr/bin/echo "ssh start please connect to 2222 on $1... "
+      /usr/bin/sync
       break
     fi
     i=`/usr/bin/expr $i + 1`
@@ -203,7 +206,7 @@ if [ $i -eq 60 ]; then
   # sleep 5 minutes and restart
   /home/pi/pisolar/writereg.py 8 300
   if [ $? -ne 0 ]; then
-    /usr/bin/echo "FAILED: can't return in wait mode!!!"
+    /usr/bin/echo "FAILED: can't return in wait mode: $? !!!"
     /usr/bin/echo "Ping has failed"
     /usr/bin/sync
     exit 0
@@ -315,7 +318,7 @@ if [ "${code}" == "200" ]; then
           wait_for=`/usr/bin/expr $WAIT_TIME \\* 60`
           /home/pi/pisolar/writereg.py 8 $wait_for
           if [ $? -ne 0 ]; then
-            /usr/bin/echo "FAILED: can't return in wait mode!!!"
+            /usr/bin/echo "FAILED: can't return in wait mode: $? !!!"
             /usr/bin/sync
             exit 0
           fi

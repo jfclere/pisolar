@@ -34,7 +34,7 @@ if not net:
 myinfo = nodeinfo()
 if myinfo.read():
   # Use some default values
-  print("myinfo.read() Failed!");
+  print("myinfo.read() Failed!")
   myinfo.TIME_ACTIVE = 0
   myinfo.WAIT_TIME = 120
   myinfo.MAINT_MODE = False
