@@ -206,7 +206,7 @@ if [ $i -eq 60 ]; then
   # sleep 5 minutes and restart
   /home/pi/pisolar/writereg.py 8 300
   if [ $? -ne 0 ]; then
-    /usr/bin/echo "FAILED: can't return in wait mode: $? !!!"
+    /usr/bin/echo "FAILED: can't return in wait mode!!!"
     /usr/bin/echo "Ping has failed"
     /usr/bin/sync
     exit 0
@@ -318,7 +318,7 @@ if [ "${code}" == "200" ]; then
           wait_for=`/usr/bin/expr $WAIT_TIME \\* 60`
           /home/pi/pisolar/writereg.py 8 $wait_for
           if [ $? -ne 0 ]; then
-            /usr/bin/echo "FAILED: can't return in wait mode: $? !!!"
+            /usr/bin/echo "FAILED: can't return in wait mode!!!"
             /usr/bin/sync
             exit 0
           fi
@@ -451,7 +451,7 @@ else
   if [ $? -eq 0 ]; then
     # wait 5 minutes
     /home/pi/pisolar/writereg.py 8 300 
-    if [ $? -eq 0 ]; then
+    if [ $? -ne 0 ]; then
       /usr/bin/echo "FAILED: can't return in wait mode!!!"
       /usr/bin/sync
       exit 0
