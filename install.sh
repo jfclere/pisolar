@@ -1,10 +1,10 @@
 #!/bin/bash
 
 #
-# we need the NetworkManager
+# we will need the NetworkManager
 sudo systemctl daemon-reload
 sudo systemctl stop wpa_supplicant
-sudo systemctl start NetworkManager
+sudo systemctl stop NetworkManager
 
 # first install wifi information from /home/pi/wpa_supplicant.conf
 # convert wpa_supplicant.conf in nmcli commands
@@ -41,30 +41,55 @@ while IFS= read -r line; do
 done < /home/pi/wpa_supplicant.conf
 }
 
+# configure by copying configuration
+echo "install for wifi..."
+sudo cp /home/pi/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
+sudo chmod 600 /etc/wpa_supplicant/wpa_supplicant.conf
+sudo rfkill unblock wifi
+for filename in /var/lib/systemd/rfkill/*:wlan ; do
+    echo 0 | sudo tee -a $filename
+done
+sudo systemctl start wpa_supplicant
+sudo systemctl start NetworkManager
+sleep 10
+sudo systemctl status NetworkManager
+sudo systemctl status wpa_supplicant
+sudo rfkill list all
+sudo rfkill unblock all
+sudo rfkill list all
+sudo nmcli radio wifi on
+echo "install for wifi Done!!!"
+
 # wait until wifi is started
 while true
 do
   sid=`nmcli -t -f SSID device wifi`
   if [ "$sid" = "" ]; then
+    echo "waiting for wifi..."
+    sudo nmcli -t -f SSID device wifi
+    sudo rfkill list all
+    echo "waiting for wifi!!!"
+    sync
     sleep 10
   else
+    iw dev wlan0 info
     echo "Wifi started!"
     break
   fi
 done
 
-# Try to connect to one of wifi we can see
-for sid in `nmcli -t -f SSID device wifi`
-do
-  echo "sid: $sid"
-  pass=`getpass $sid`
-  if [ "x$pass" = "x" ]; then
-    echo "Ignore $sid not in our list"
-  else
-    echo "trying $sid $pass"
-    sudo nmcli device wifi connect $sid password $pass
-  fi
-done
+# Try to connect to one of wifi we can see (Not needed???)
+#for sid in `nmcli -t -f SSID device wifi`
+#do
+#  echo "sid: $sid"
+#  pass=`getpass $sid`
+#  if [ "x$pass" = "x" ]; then
+#    echo "Ignore $sid not in our list"
+#  else
+#    echo "trying $sid $pass"
+#    sudo nmcli device wifi connect $sid password $pass
+#  fi
+#done
 
 for run in {1..666}
 do
