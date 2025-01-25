@@ -336,6 +336,12 @@ if [ "${code}" == "200" ]; then
     /usr/bin/cadaver https://${SERVER}/webdav/ < /tmp/cmd.txt
   else
     /usr/bin/echo "Can't read image"
+    /usr/bin/ps -ef | /usr/bin/grep libcamera-still | /usr/bin/grep -v grep
+    if [ $? -eq 0 ]; then
+      echo "libcamera-still hanging kill it!!!!"
+      pid=`/usr/bin/ps -ef | /usr/bin/grep libcamera-still | /usr/bin/grep -v grep | /usr/bin/awk ' { print $2 } '`
+      /usr/bin/kill -15 $pid
+    fi
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${address}
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/reportold-${MACHINE_ID}-camerapb
     /usr/bin/journalctl -u image > /tmp/temp.txt
