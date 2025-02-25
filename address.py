@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 # Send the address to the server.
-# 550 = low value
 
-import RPi.GPIO as GPIO
 import os
 import time
 import socket

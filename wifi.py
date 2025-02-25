@@ -43,7 +43,11 @@ class wifi():
   s.connect(addr)
   # cadata=CA certificate chain (in DER format)
   cadata = self.getcadata()
-  s = ssl.wrap_socket(s) #, cadata=cadata)
+  context = ssl.create_default_context()
+  context.load_verify_locations(cadata=cadata)
+  #context.check_hostname = False
+  #context.verify_mode = ssl.CERT_NONE
+  s = context.wrap_socket(s, server_hostname=hostname) #, cadata=cadata)
   # print(s)
 
   # write it
@@ -95,7 +99,10 @@ class wifi():
   s.connect(addr)
   # cadata=CA certificate chain (in DER format)
   cadata = self.getcadata()
-  s = ssl.wrap_socket(s, cadata=cadata)
+  context = ssl.SSLContext(cadata=cadata)
+  context.check_hostname = False
+  context.verify_mode = ssl.CERT_NONE
+  s = context.wrap_socket(s, server_hostname=hostname) #, cadata=cadata)
   # print(s)
 
   # write request
