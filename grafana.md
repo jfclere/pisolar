@@ -10,13 +10,28 @@ test it:
 ```
 http://localhost:3000/login admin/admin
 ```
+install postgres:
+```
+yum install postgres
+```
+start it:
+```
+sudo /usr/bin/postgresql-setup --initdb
+sudo systemctl start postgresql.service
+```
 Add data sources / postgreSQL
-1 - user user for granafa
+1 - user postgres for granafa
 ```
 sudo su - postgres
 createuser grafana
 ```
-In psql -d bme280 (still as postgres):
+2 -database bme280
+In psql:
+```
+CREATE USER jfclere;
+CREATE DATABASE bme280 OWNER jfclere;
+```
+In psql -d bme280 (still as postgres create the table measurements too!):
 ```
 CREATE ROLE  grafana;
 GRANT CONNECT ON DATABASE bme280 to grafana;
