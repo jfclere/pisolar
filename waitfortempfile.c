@@ -25,11 +25,18 @@ struct gasinfo {
    float voc;
    float co;
 };
+struct watinfo {
+   float bat;
+   float hyd;
+   float sol;
+   float wat;
+};
 
 int debug = 0;
 
 void inserttemp(char *table, time_t t, float temp, float pres, float humi);
 void insertgas(char *table, time_t t, float no2, float alcohol, float voc, float co);
+void insertwat(char *table, time_t t, float bat, float hyd, float sol, float wat);
 
 static int getsumfile(char *filename) {
    FILE *fptr = fopen(filename, "r");
@@ -106,6 +113,48 @@ static int readgasfile(char *filename, struct gasinfo *info) {
    }
    fclose(fptr);
    free(input);
+   if (ret == 4)
+       return 0;
+   return 1;
+}
+static int readwatfile(char *filename, struct watinfo *info) {
+   FILE *fptr = fopen(filename, "r");
+   if (!fptr) {
+       if (debug)
+           printf("readwatfile: open %s failed\n", filename);
+       return 1;
+   }
+   size_t size = 100;
+   char *input = malloc(100);
+   int ret = 0;
+   info->wat = 0.00;
+   while (fgets(input, size, fptr)>0) {
+       if (strstr(input, "Bat")) {
+           info->bat = readval(input);
+           ret++;
+           if (debug)
+               printf("readwatfile: got Bat\n");
+       } else if (strstr(input, "Hyd")) {
+           info->hyd = readval(input);
+           ret++;
+           if (debug)
+               printf("readwatfile: got Hyd\n");
+       } else if (strstr(input, "Sol")) {
+           info->sol = readval(input);
+           ret++;
+           if (debug)
+               printf("readwatfile: got Sol\n");
+       } if (strstr(input, "Wat")) {
+           info->wat = readval(input);
+           ret++;
+           printf("readwatfile: got Wat\n");
+       }
+   }
+   fclose(fptr);
+   free(input);
+   if (ret == 3)
+       if (info->wat == 0.00)
+           ret++;
    if (ret == 4)
        return 0;
    return 1;
@@ -196,6 +245,27 @@ int main(int argc, char **argv){
                            int sum = getsumfile(fullname);
                            if (sum != checksum) {
                                insertgas(table, t, info.no2, info.alcohol, info.voc, info.co);
+                               checksum = sum;
+                           }
+                       } else {
+                           if (debug)
+                               printf("file: %s ERROR reading %d\n", event->name, err);
+                       }
+                   }
+                   if (!strcmp(event->name, "value.txt")) {
+                       /* If the fle has changed let's tell the world */
+                       struct watinfo info;
+                       char fullname[100];
+                       strcpy(fullname, path_to_be_watched);
+                       strcat(fullname, "/value.txt");
+                       int err = readwatfile(fullname, &info);
+                       if (!err) {
+                           time_t t = time(NULL);
+                           if (debug)
+                               printf("%d %f %f %f %f\n", t, info.bat, info.hyd, info.sol, info.wat);
+                           int sum = getsumfile(fullname);
+                           if (sum != checksum) {
+                               insertwat(table, t, info.bat, info.hyd, info.sol, info.wat);
                                checksum = sum;
                            }
                        } else {
