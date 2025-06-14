@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# pip3 install pi-ina219
+# push to the i2c0 of zerow
 from ina219 import INA219
 from ina219 import DeviceRangeError
 import sys
