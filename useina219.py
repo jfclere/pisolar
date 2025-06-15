@@ -4,6 +4,9 @@
 from ina219 import INA219
 from ina219 import DeviceRangeError
 import sys
+import requests
+import time
+from nodeinfo import nodeinfo
 
 SHUNT_OHMS = 0.1
 
@@ -28,20 +31,29 @@ if __name__ == "__main__":
     if len(args) == 0:
       read()
     else:
+      # connect to the server to get our information
+      info = nodeinfo()
+      if info.read():
+        print("Failed no info!")
+        exit()
+      headers = {'Content-type': 'text/plain'}
+      url = "https://" + info.server + "/webdav/" + info.REMOTE_DIR + "/current.txt"
       # Loop displaying medium current
-      i = 0
-      t = 0
       max = 0.0
       min = 100.0
       ina = INA219(SHUNT_OHMS)
       ina.configure()
       while True:
-        i = i + 1 
-        v = ina.current()
-        if max < v:
-          max = v
-        if min > v:
-          min = v 
-        t = t + v
-        m = t/i
-        print("Bus Current: " + str(round(m,3)) + " mA" + " min " + str(round(min,3)) + " max " + str(round(max,3)))
+        ma = ina.current()
+        vl = ina.voltage()
+        pw = ina.power()
+        if max < ma:
+          max = ma
+        if min > ma:
+          min = ma 
+        print("Bus Current: " + str(round(ma,3)) + " mA" + " min " + str(round(min,3)) + " max " + str(round(max,3)))
+        mess = "Current : " + str(round(ma,2)) + "\n"
+        mess = mess + "Voltage : " + str(round(vl,2)) + "\n"
+        mess = mess + "Power : " + str(round(pw,2))
+        requests.put(url, data=mess, headers=headers, auth=(info.login, info.password))
+        time.sleep(10)
