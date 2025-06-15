@@ -85,6 +85,21 @@ static int readtempfile(char *filename, struct info *info) {
        return 0;
    return 1;
 }
+/* read the Temperature, Pressure and Humidity from the dongle*.txt files */
+/* format is something like: "0 25.75 963.04 55.37 36.00" */
+static int readtempdongle(char *filename, struct info *info) {
+   FILE *fptr = fopen(filename, "r");
+   if (!fptr)
+       return 1;
+   int time = 0;
+   if (fscanf(fptr, "%d %f %f %f\n", &time, &info->temp, &info->pres, &info->humi) != 4) {
+     fclose(fptr);
+     return 1;
+   }
+   fclose(fptr);
+   return 0;
+}
+/* read gaz values from the multi channel gaz sensor */
 static int readgasfile(char *filename, struct gasinfo *info) {
    FILE *fptr = fopen(filename, "r");
    if (!fptr) {
@@ -257,6 +272,27 @@ int main(int argc, char **argv){
                        strcpy(fullname, path_to_be_watched);
                        strcat(fullname, "/temp.txt");
                        int err = readtempfile(fullname, &info);
+                       if (!err) {
+                           time_t t = time(NULL);
+                           if (debug)
+                               printf("%d %f %f %f\n", t, info.temp, info.pres, info.humi);
+                           int sum = getsumfile(fullname);
+                           if (sum != checksum) {
+                               inserttemp(table, t, info.temp, info.pres, info.humi);
+                               checksum = sum;
+                           }
+                       } else {
+                           if (debug)
+                               printf("file: %s ERROR reading %d\n", event->name, err);
+                       }
+                   }
+                   if (!strncmp(event->name, "dongle", 6)) {
+                       /* If the dongle*.txt file has changed let's tell the world */ 
+                       struct info info;
+                       char fullname[100];
+                       strcpy(fullname, path_to_be_watched);
+                       strcat(fullname, event->name);
+                       int err = readtempdongle(fullname, &info);
                        if (!err) {
                            time_t t = time(NULL);
                            if (debug)
