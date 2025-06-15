@@ -8,7 +8,9 @@ insertgas.o: insertgas.c
 	cc -c insertgas.c
 insertwat.o: insertwat.c
 	cc -c insertwat.c
-waitfordatafile: waitfortempfile.o insertgas.o inserttemp.o insertwat.o
-	cc -o waitfordatafile waitfortempfile.o insertgas.o inserttemp.o insertwat.o -lpq -lz
+insertchr.o: insertchr.c
+	cc -c insertchr.c
+waitfordatafile: waitfortempfile.o insertgas.o inserttemp.o insertwat.o insertchr.o
+	cc -o waitfordatafile waitfortempfile.o insertgas.o inserttemp.o insertwat.o insertchr.o -lpq -lz
 waitfordatamess: waitformess.o insertgas.o inserttemp.o
 	cc -o waitfordatamess waitformess.o insertgas.o inserttemp.o -lpq -lz -lpaho-mqtt3as

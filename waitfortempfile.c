@@ -31,12 +31,18 @@ struct watinfo {
    float sol;
    float wat;
 };
+struct powinfo {
+   float f1;
+   float f2;
+   float f3;
+};
 
 int debug = 0;
 
 void inserttemp(char *table, time_t t, float temp, float pres, float humi);
 void insertgas(char *table, time_t t, float no2, float alcohol, float voc, float co);
 void insertwat(char *table, time_t t, float bat, float hyd, float sol, float wat);
+void insertpow(char *table, time_t t, float f1, float f2, float f3);
 
 static int getsumfile(char *filename) {
    FILE *fptr = fopen(filename, "r");
@@ -159,6 +165,40 @@ static int readwatfile(char *filename, struct watinfo *info) {
        return 0;
    return 1;
 }
+static int readpowfile(char *filename, struct powinfo *info) {
+   FILE *fptr = fopen(filename, "r");
+   if (!fptr) {
+       if (debug)
+           printf("readwatfile: open %s failed\n", filename);
+       return 1;
+   }
+   size_t size = 100;
+   char *input = malloc(100);
+   int ret = 0;
+   while (fgets(input, size, fptr)>0) {
+       if (strstr(input, "Current")) {
+           info->f1 = readval(input);
+           ret++;
+           if (debug)
+               printf("readwatfile: got Current\n");
+       } else if (strstr(input, "Voltage")) {
+           info->f2 = readval(input);
+           ret++;
+           if (debug)
+               printf("readwatfile: got Voltage\n");
+       } else if (strstr(input, "Power")) {
+           info->f3 = readval(input);
+           ret++;
+           if (debug)
+               printf("readwatfile: got Power\n");
+       }
+   }
+   fclose(fptr);
+   free(input);
+   if (ret == 3)
+       return 0;
+   return 1;
+}
 
 int main(int argc, char **argv){
     if (argc != 3) {
@@ -266,6 +306,27 @@ int main(int argc, char **argv){
                            int sum = getsumfile(fullname);
                            if (sum != checksum) {
                                insertwat(table, t, info.bat, info.hyd, info.sol, info.wat);
+                               checksum = sum;
+                           }
+                       } else {
+                           if (debug)
+                               printf("file: %s ERROR reading %d\n", event->name, err);
+                       }
+                   }
+                   if (!strcmp(event->name, "current.txt")) {
+                       /* If the fle has changed let's tell the world */
+                       struct powinfo info;
+                       char fullname[100];
+                       strcpy(fullname, path_to_be_watched);
+                       strcat(fullname, "/current.txt");
+                       int err = readpowfile(fullname, &info);
+                       if (!err) {
+                           time_t t = time(NULL);
+                           if (debug)
+                               printf("%d %f %f %f %f\n", t, info.f1, info.f2, info.f3);
+                           int sum = getsumfile(fullname);
+                           if (sum != checksum) {
+                               insertpow(table, t, info.f1, info.f2, info.f3);
                                checksum = sum;
                            }
                        } else {
