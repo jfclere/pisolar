@@ -35,10 +35,12 @@ void insertpow(char *table, time_t t, float bat, float hyd, float sol) {
     char p1[100], p2[100], p3[100], p4[100];
     const char *paramValues[] = { p1, p2, p3, p4 };
     sprintf(p1, "%d", t);
+    /* quick hack */
+    // bat = bat / 10.0;
     sprintf(p2, "%4.2f", bat);
     sprintf(p3, "%4.2f", hyd);
     /* quick hack */
-    sol = sol / 10.0;
+    // sol = sol / 100.0;
     sprintf(p4, "%4.2f", sol);
     printf("doing %s %s %s %s %s\n", sinto, p1, p2, p3, p4);
     // make call to database server
