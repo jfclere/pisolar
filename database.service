@@ -1,0 +1,16 @@
+[Unit]
+Description=Database report service
+After=network.target
+Requires=postgresql.service
+
+[Service]
+User=jfclere
+# ExecStart=/home/jfclere/waitfortempfile /home/jfclere/public_html/webcamcalella measurements
+ExecStart=/home/jfclere/waitfortempfile /home1/webdav/pi0neuchatelbig measurements_neuchatel
+WorkingDirectory=/home/jfclere
+Restart=on-failure
+StandardOutput=inherit
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target
