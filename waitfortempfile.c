@@ -18,6 +18,7 @@ struct info {
    float temp;
    float pres;
    float humi;
+   float batt;
 };
 struct gasinfo {
    float no2;
@@ -39,7 +40,7 @@ struct powinfo {
 
 int debug = 0;
 
-void inserttemp(char *table, time_t t, float temp, float pres, float humi);
+void inserttemp(char *table, time_t t, float temp, float pres, float humi, float batt);
 void insertgas(char *table, time_t t, float no2, float alcohol, float voc, float co);
 void insertwat(char *table, time_t t, float bat, float hyd, float sol, float wat);
 void insertpow(char *table, time_t t, float f1, float f2, float f3);
@@ -92,7 +93,7 @@ static int readtempdongle(char *filename, struct info *info) {
    if (!fptr)
        return 1;
    int time = 0;
-   if (fscanf(fptr, "%d %f %f %f\n", &time, &info->temp, &info->pres, &info->humi) != 4) {
+   if (fscanf(fptr, "%d %f %f %f %f\n", &time, &info->temp, &info->pres, &info->humi, &info->batt) != 5) {
      fclose(fptr);
      return 1;
    }
@@ -278,7 +279,7 @@ int main(int argc, char **argv){
                                printf("%d %f %f %f\n", t, info.temp, info.pres, info.humi);
                            int sum = getsumfile(fullname);
                            if (sum != checksum) {
-                               inserttemp(table, t, info.temp, info.pres, info.humi);
+                               inserttemp(table, t, info.temp, info.pres, info.humi, 0.0);
                                checksum = sum;
                            }
                        } else {
@@ -296,10 +297,10 @@ int main(int argc, char **argv){
                        if (!err) {
                            time_t t = time(NULL);
                            if (debug)
-                               printf("%d %f %f %f\n", t, info.temp, info.pres, info.humi);
+                               printf("%d %f %f %f %f\n", t, info.temp, info.pres, info.humi, info.batt);
                            int sum = getsumfile(fullname);
                            if (sum != checksum) {
-                               inserttemp(table, t, info.temp, info.pres, info.humi);
+                               inserttemp(table, t, info.temp, info.pres, info.humi, info.batt);
                                checksum = sum;
                            }
                        } else {

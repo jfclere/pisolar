@@ -29,7 +29,7 @@ static void do_exit(PGconn *conn, PGresult *res) {
     exit(1);
 }
 
-void inserttemp(char *table, time_t t, float temp, float pres, float humi) {
+void inserttemp(char *table, time_t t, float temp, float pres, float humi, float batt) {
     // Here is the database connection being used
     PGconn *conn = PQconnectdb("user=jfclere dbname=bme280");
     if (PQstatus(conn) == CONNECTION_BAD) {
@@ -38,16 +38,17 @@ void inserttemp(char *table, time_t t, float temp, float pres, float humi) {
         exit(1);
     }
     char sinto[100];
-    sprintf(sinto, "INSERT INTO %s VALUES($1,$2,$3,$4)", table);
-    char p1[100], p2[100], p3[100], p4[100];
-    const char *paramValues[] = { p1, p2, p3, p4 };
+    sprintf(sinto, "INSERT INTO %s VALUES($1,$2,$3,$4,$5)", table);
+    char p1[100], p2[100], p3[100], p4[100], p5[100];
+    const char *paramValues[] = { p1, p2, p3, p4, p5 };
     sprintf(p1, "%d", t);
     sprintf(p2, "%4.2f", temp);
     sprintf(p3, "%6.2f", pres);
     sprintf(p4, "%4.2f", humi);
-    printf("doing %s %s %s %s %s\n", sinto, p1, p2, p3, p4);
+    sprintf(p5, "%4.2f", batt);
+    printf("doing %s %s %s %s %s %s\n", sinto, p1, p2, p3, p4, p5);
     // make call to database server
-    PGresult *res = PQexecParams(conn, sinto, 4, NULL, paramValues, NULL, NULL, 0);
+    PGresult *res = PQexecParams(conn, sinto, 5, NULL, paramValues, NULL, NULL, 0);
     if (PQresultStatus(res) != PGRES_COMMAND_OK) 
         do_exit(conn, res);     
     PQclear(res);
