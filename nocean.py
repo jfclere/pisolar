@@ -29,35 +29,44 @@ net = True
 if i == 30:
   # We don't have network
   net = False
-  GPIO.setup(BLUELED,GPIO.OUT)
-  GPIO.output(BLUELED,GPIO.HIGH)
 
 if not net:
   print("NO Network!")
+  exit(1)
 
+etag = ""
 myinfo = nodeinfo()
+if myinfo.readsaved():
+  # Nothing saved
+  print("NO Save values!")
+else:
+  etag = myinfo.ETAG
+
 if myinfo.read():
   # Use some default values
   print("myinfo.read() Failed!");
   myinfo.TIME_ACTIVE = 1
   myinfo.WAIT_TIME = 3405
   myinfo.MAINT_MODE = False
+else:
+  myinfo.saveconf()
 
-if myinfo.MAINT_MODE:
-  # Maintenance mode required
-  try:
-    myreg = readreg()
-    myreportserver = reportserver()
-    myreportserver.report(myinfo, myreg)
-  except: 
-    print("report to server failed")
-  print("myinfo.read() Failed maintenance mode!")
-  exit()
+while True:
+  if myinfo.TIME_ACTIVE > 0:
+    GPIO.output(OCEANGPIO,GPIO.HIGH)
+    print("on for " + str(myinfo.TIME_ACTIVE) + " Minutes")
+    time.sleep(60*myinfo.TIME_ACTIVE)
+  else:
+    GPIO.output(OCEANGPIO,GPIO.LOW)
+    print("off for 1 Minutes")
+    time.sleep(60)
+  if not myinfo.read():
+    # check the etag for change and save configuration
+    if etag != myinfo.ETAG:
+      print("ETAG: " + etag + " New: " + myinfo.ETAG)
+      etag = myinfo.ETAG
+      myinfo.saveconf()
 
-if myinfo.TIME_ACTIVE > 0:
-  GPIO.output(OCEANGPIO,GPIO.HIGH)
-  print("on for " + str(myinfo.TIME_ACTIVE) + " Minutes")
-  time.sleep(60*myinfo.TIME_ACTIVE)
   print("Done")
 
 # end make sure to stop

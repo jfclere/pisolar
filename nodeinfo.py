@@ -24,6 +24,7 @@ class nodeinfo:
   BATCHARGED=773
   TIME_ACTIVE=2
   MAINT_MODE=False
+  ETAG=""
 
   # read the machine_id (/etc/machine-id)
   # read server info ($HOME/.netrc)
@@ -61,6 +62,8 @@ class nodeinfo:
     try:
       r = requests.get('https://' + self.server + '/machines/' + self.machine_id)
       if (r.status_code == 200):
+        # Read ETAG
+        self.ETAG = r.headers['ETAG']
         # Read the information
         i = 0
         for l in r.iter_lines():
@@ -104,12 +107,42 @@ class nodeinfo:
       f.write("\n")
       f.write(str(self.TIME_ACTIVE))
       f.write("\n")
+      f.write(self.ETAG)
+      f.write("\n")
       f.close()
     except Exception as e:
       print('Exception: ' + str(e))
       return True
     return False
 
+  # read saved info
+  def readsaved(self):
+    try:
+      f = open("/home/pi/savedconfig.txt", "r")
+      i = 0
+      for line in f:
+        if i == 0:
+          self.REMOTE_DIR=line.rstrip()
+        if i == 1:
+          self.WAIT_TIME=int(line.rstrip())
+        if i == 2:
+          self.BAT_LOW=int(line.rstrip())
+        if i == 3:
+          self.GIT_VER=line.rstrip()
+        if i == 4:
+          self.BATCHARGED=int(line.rstrip())
+        if i == 5:
+          self.TIME_ACTIVE=int(line.rstrip())
+        if i == 6:
+          self.ETAG=line.rstrip()
+        i = i + 1
+      f.close()
+    except Exception as e:
+      print('Exception: ' + str(e))
+      return True
+    return False
+
+  #
   # read save version id
   def readsavedversion(self):
     version=""
