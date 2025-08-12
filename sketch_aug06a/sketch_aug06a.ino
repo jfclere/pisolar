@@ -1,6 +1,6 @@
 #include "core_adc.h"
 
-#define MAXUPTIME 60000UL // 10 minutes
+#define MAXUPTIME 30000UL // 5 minutes
 
 // PB0 is SDA
 const int readpicow = PB1;
@@ -16,7 +16,7 @@ unsigned short   *batcharged;
 unsigned short   *val; // medium value
 volatile uint8_t i2c_regs[17]; // Like my other projects if we want to use I2C one day
 
-#define BATCHARGED 400 // should be 600 for the 12V version???
+#define BATCHARGED 640 // should be 640 for the 14.4V
 
 int sum = 0; // sum
 int count = 0;
@@ -65,7 +65,7 @@ void loop() {
     picoval = digitalRead(readpicow);
     if (picoval != picooldval) {
       uptime = millis();
-      // Testing ... picooldval = picoval;
+      picooldval = picoval;
     } else {
       // The value is unchanged
       unsigned long currentMillis = millis();
@@ -81,6 +81,7 @@ void loop() {
         // Reset the picow.
         digitalWrite(resetpicow, LOW);
         uptime = currentMillis;
+        delay(1000);
         digitalWrite(resetpicow, HIGH);
       }
     }
