@@ -61,13 +61,13 @@ while True:
       GPIO.output(OCEANGPIO,GPIO.HIGH)
       print("on until " + str(myinfo.TIME_ACTIVE) + " C have now " + str(temperature))
     else:
-      print("off for 1 Minutes")
+      print("off for 10 Minutes")
       GPIO.output(OCEANGPIO,GPIO.LOW)
   else:
     GPIO.output(OCEANGPIO,GPIO.LOW)
-    print("off for 1 Minutes")
-  print("wait for 1 Minutes")
-  time.sleep(60)
+    print("off for 10 Minutes")
+  print("wait for 10 Minutes")
+  time.sleep(600)
   if not myinfo.read():
     # check the etag for change and save configuration
     if etag != myinfo.ETAG:
