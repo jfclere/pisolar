@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 
 import serial
 import sys
@@ -31,8 +32,10 @@ def HTTPINIT():
     print(res_httpinit)
     if res_httpinit == "ERROR":
         print('HTTP Initialization failed') 
+        return False
     else:
         print('HTTP Initialization Done')
+        return True
 
 
 class HTTPPARA:
@@ -47,10 +50,10 @@ class HTTPPARA:
         print(res_PARA)
         if res_PARA == "OK":
             print("Connected to:" + self.url)
-            return True
+            return False
         else:
             print("Connection failed")
-            return False
+            return True
 
 
 def HTTPDATA(data):
@@ -144,11 +147,33 @@ def HTTPTERM():
     if res_term == 'OK':
         print("bye")
 
+def HTTPDATE():
+    print("Reading date")
+    command = 'AT+CCLK?\r\n'
+    ser.write(command.encode())
+    res = ser.readlines()[1].decode('utf-8').strip()
+    if "+CCLK:" not in res:
+        return None
+    idx1 = res.find("\"")
+    idx2 = res.find("+", idx1)
+    sdate = res[idx1+1:idx2] 
+    try:
+        datetime_object = datetime.strptime(sdate, '%Y/%m/%d,%H:%M:%S') 
+        print(datetime_object)
+    except:
+        return None
+    return datetime_object
 
 if __name__ == '__main__':
     # ser = serial.Serial('COM6', 115200, timeout=1)
     AT().AT_port()
-    HTTPINIT()
+    if HTTPINIT():
+        print("HTTPINIT failed")
+        sys.exit(e)
+    mydate = HTTPDATE()
+    if not mydate:
+        print("HTTPDATE failed")
+        sys.exit(0)
     HTTPPARA().PARA()
     # HTTPPARA('http://116.182.15.2:8000').PARA()
     print('Continue？yes/no')
