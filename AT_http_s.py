@@ -1,4 +1,5 @@
 import time
+import os
 from datetime import datetime
 
 import serial
@@ -55,6 +56,35 @@ class HTTPPARA:
             print("Connection failed")
             return True
 
+class NODEINFO:
+  def __init__(self):
+    self.machine_id="a470a4070ed946d2ad6b98a9cf130f7b"
+    try:
+      text_file = open("/etc/machine-id");
+      self.machine_id = text_file.readline().rstrip()
+      text_file.close()
+    except Exception as e:
+      print('Exception: ' + str(e))
+
+    self.server="jfclere.myddns.me"
+    self.login="jfclere"
+    self.password="changeit"
+    home_directory = os.path.expanduser( '~' )
+    try:
+      text_file = open(home_directory + "/.netrc")
+      for i in range(3): 
+        txt = text_file.readline()
+        x = txt.split(" ")
+        if x[0] == "machine":
+          self.machine=x[1].rstrip()
+        if x[0] == "login":
+          self.login=x[1].rstrip()
+        if x[0] == "password":
+           text_file.close()
+    except Exception as e:
+      print('Exception: ' + str(e))
+      return
+
 
 def HTTPDATA(data):
     l = str(len(data))
@@ -84,6 +114,7 @@ def HTTPACTION(action):
     print('send request')
     command = 'AT+HTTPACTION={}\r\n'.format(action)
     ser.write(command.encode())
+    # read headers
     res_aciton = ser.readlines()[1].decode('utf-8').strip()
     # if res_aciton == 'OK':
     #     print('Waiting for response!')
@@ -123,21 +154,27 @@ def HTTPACTION(action):
             status_code = int(status_code)
             if status_code >= 200 and status_code < 300:
                 print('OK!')
-                HTTPREAD(response_length)
+                return HTTPREAD(response_length)
             else:
                 print('Not OK: ', status_code)
             break
+    return None
 
 
 def HTTPREAD(data_length):
     print('Reading Response')
     command = 'AT+HTTPREAD=0,{}\r\n'.format(data_length)
     ser.write(command.encode())
-    res_aciton = ser.readlines()[4].decode('utf-8').strip()
+    #res_aciton = ser.readlines()[4].decode('utf-8').strip()
+    res_aciton = ser.readlines()
+    # the response is something like [b'AT+HTTPREAD=0,25\r\n', b'OK\r\n', b'\r\n', b'+HTTPREAD: 25\r\n', b' ...  b'+HTTPREAD: 0\r\n'
     print(res_aciton)
+    resp = ""
+    for i in range(4, len(res_aciton)-1):
+        resp = resp + res_aciton[i].decode('utf-8')
+    print(resp)
     print("End Response")
-    # HTTPTERM()
-
+    return resp
 
 def HTTPTERM():
     print("Closing HTTP connection")
@@ -169,13 +206,27 @@ if __name__ == '__main__':
     AT().AT_port()
     if HTTPINIT():
         print("HTTPINIT failed")
-        sys.exit(e)
+        sys.exit(1)
     mydate = HTTPDATE()
     if not mydate:
         print("HTTPDATE failed")
         sys.exit(0)
-    HTTPPARA().PARA()
-    # HTTPPARA('http://116.182.15.2:8000').PARA()
+
+    # Read the configuration
+    info = NODEINFO()
+    print('server: ' + info.server)
+    print('machine_id: ' + info.machine_id)
+
+    # Do a GET to the configuration file
+    HTTPPARA('https://'+ info.server + '/machines/' + info.machine_id).PARA()
+    resp = HTTPACTION(0)
+    HTTPTERM()
+    if not resp:
+        print("GET failed")
+        sys.exit(1)
+    else:
+        print(resp)
+    sys.exit(0)
     print('Continue？yes/no')
     user_input = input()
     if user_input.lower() == 'y' or user_input.lower() == 'yes':
