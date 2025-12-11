@@ -79,17 +79,17 @@ do
 done
 
 # Try to connect to one of wifi we can see (Not needed???)
-#for sid in `nmcli -t -f SSID device wifi`
-#do
-#  echo "sid: $sid"
-#  pass=`getpass $sid`
-#  if [ "x$pass" = "x" ]; then
-#    echo "Ignore $sid not in our list"
-#  else
-#    echo "trying $sid $pass"
-#    sudo nmcli device wifi connect $sid password $pass
-#  fi
-#done
+for sid in `nmcli -t -f SSID device wifi`
+do
+  echo "sid: $sid"
+  pass=`getpass $sid`
+  if [ "x$pass" = "x" ]; then
+    echo "Ignore $sid not in our list"
+  else
+    echo "trying $sid $pass"
+    sudo nmcli device wifi connect $sid password $pass
+  fi
+done
 
 for run in {1..666}
 do
