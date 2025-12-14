@@ -293,7 +293,11 @@ if [ "${code}" == "200" ]; then
   fi
   # For old raspbian version (before bullseye)
   # /usr/bin/raspistill -o /tmp/now.jpg
-  /usr/bin/libcamera-still -o /tmp/now.jpg
+  if [ -x /usr/bin/rpicam-still ]; then
+    /usr/bin/rpicam-still -o /tmp/now.jpg
+  else
+    /usr/bin/libcamera-still -o /tmp/now.jpg
+  fi
   if [ $? -eq 0 ]; then
     /usr/bin/python /home/pi/pisolar/bme280.py > /tmp/temp.txt
     if [ $? -eq 0 ]; then
