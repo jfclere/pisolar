@@ -30,8 +30,11 @@ def send_to_fb(image_path):
     
     # 2. Convert to BGRA or RGB32
     if bpp == 32:
-        img = img.convert("RGBA")
-        raw_data = img.tobytes()
+        img = img.convert("RGB")
+        x = Image.new("L", (1920, 1080), 255)
+        r, g, b = img.split()
+        img_bgra = Image.merge("RGBA", (b, g, r, x))
+        raw_data = img_bgra.tobytes()
     elif bpp == 24:
         img = img.convert("RGB")
         raw_data = img.tobytes()
