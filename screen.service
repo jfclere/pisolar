@@ -1,0 +1,16 @@
+[Unit]
+Description=Database report service
+After=network.target
+
+[Service]
+User=pi
+Environment=PYTHONUNBUFFERED=1
+# ExecStart=/home/jfclere/waitfortempfile /home/jfclere/public_html/webcamcalella measurements
+ExecStart=/home/pi/pisolar/webdisplay.py
+WorkingDirectory=/home/pi
+Restart=on-failure
+StandardOutput=inherit
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target
