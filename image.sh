@@ -185,6 +185,18 @@ do_ssh()
 }
 
 #
+# kill run/hanging libcamera-still
+do_kill()
+{  
+  /usr/bin/ps -ef | /usr/bin/grep libcamera-still | /usr/bin/grep -v grep >/dev/null 2>/dev/null
+  if [ $? -eq 0 ]; then
+    echo "libcamera-still hanging kill it!!!!"
+    pid=`/usr/bin/ps -ef | /usr/bin/grep libcamera-still | /usr/bin/grep -v grep | /usr/bin/awk ' { print $2 } '`
+    /usr/bin/kill -15 $pid
+  fi
+}
+
+#
 # check for the server (for one hour for the moment)
 i=0
 while [ $i -lt 60 ]
@@ -291,6 +303,9 @@ if [ "${code}" == "200" ]; then
     # we have autofocus camera
     /home/pi/pisolar/Autofocus.py
   fi
+
+  # kill running libcamera-still (it might hang when using chron)
+  do_kill
   # For old raspbian version (before bullseye)
   # /usr/bin/raspistill -o /tmp/now.jpg
   if [ -x /usr/bin/rpicam-still ]; then
@@ -340,12 +355,7 @@ if [ "${code}" == "200" ]; then
     /usr/bin/cadaver https://${SERVER}/webdav/ < /tmp/cmd.txt
   else
     /usr/bin/echo "Can't read image"
-    /usr/bin/ps -ef | /usr/bin/grep libcamera-still | /usr/bin/grep -v grep
-    if [ $? -eq 0 ]; then
-      echo "libcamera-still hanging kill it!!!!"
-      pid=`/usr/bin/ps -ef | /usr/bin/grep libcamera-still | /usr/bin/grep -v grep | /usr/bin/awk ' { print $2 } '`
-      /usr/bin/kill -15 $pid
-    fi
+    do_kill
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${address}
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/reportold-${MACHINE_ID}-camerapb
     /usr/bin/journalctl -u image > /tmp/temp.txt
