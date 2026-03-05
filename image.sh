@@ -194,6 +194,12 @@ do_kill()
     pid=`/usr/bin/ps -ef | /usr/bin/grep libcamera-still | /usr/bin/grep -v grep | /usr/bin/awk ' { print $2 } '`
     /usr/bin/kill -15 $pid
   fi
+  /usr/bin/ps -ef | /usr/bin/grep rpicam-still | /usr/bin/grep -v grep >/dev/null 2>/dev/null
+  if [ $? -eq 0 ]; then
+    echo "rpicam-still hanging kill it!!!!"
+    pid=`/usr/bin/ps -ef | /usr/bin/grep rpicam-still | /usr/bin/grep -v grep | /usr/bin/awk ' { print $2 } '`
+    /usr/bin/kill -15 $pid
+  fi
 }
 
 #
