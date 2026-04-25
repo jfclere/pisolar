@@ -48,8 +48,8 @@ if net:
     mess = bytes(mess, 'utf-8')
     url = "/webdav/" + myinfo.REMOTE_DIR + "/ip.txt"
     mywifi = wifi.wifi()
-    mywifi.sendserver(mess, url, myinfo.machine, 443, myinfo.login, myinfo.password)
+    mywifi.sendserver(mess, url, myinfo.server, 443, myinfo.login, myinfo.password)
   except Exception as ex:
-    print("Send IP to web failed")
+    print("Send " + val + " to " + myinfo.server + " at " + url + " failed")
     print(str(ex))
     traceback.print_exception(type(ex), ex, ex.__traceback__)
