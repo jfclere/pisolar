@@ -61,11 +61,12 @@ sudo nmcli radio wifi on
 echo "install for wifi Done!!!"
 
 # wait until wifi is started
-while true
+for run in {1..6}
 do
   sid=`nmcli -t -f SSID device wifi`
   if [ "$sid" = "" ]; then
     echo "waiting for wifi..."
+    logger "waiting for wifi..."
     sudo nmcli -t -f SSID device wifi
     sudo rfkill list all
     echo "waiting for wifi!!!"
@@ -74,6 +75,7 @@ do
   else
     iw dev wlan0 info
     echo "Wifi started!"
+    logger "Wifi started!"
     break
   fi
 done
@@ -87,7 +89,8 @@ do
     echo "Ignore $sid not in our list"
   else
     echo "trying $sid $pass"
-    sudo nmcli device wifi connect $sid password $pass
+    logger "trying $sid $pass"
+    sudo nmcli device wifi connect $sid password $pass ifname wlan0
   fi
 done
 
