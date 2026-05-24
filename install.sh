@@ -120,6 +120,14 @@ git clone https://github.com/jfclere/pisolar.git
 # the httpd.conf conf piece is /etc/httpd/conf.d/webdav.conf
 
 sudo passwd -d pi
+sudo chsh --shell /bin/bash pi
+
+#
+# ssh adjustments
+sudo sed -i 's|^#\?PasswordAuthentication.*|PasswordAuthentication no|' /etc/ssh/sshd_config
+sudo ssh-keygen -A
+sudo systemctl enable ssh
+sudo systemctl start ssh
 
 # legacy camera
 # sudo /usr/bin/raspi-config nonint do_legacy 0
