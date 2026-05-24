@@ -1,8 +1,8 @@
 # mount | grep mmcblk
 # find boot and copy boot/wpa_supplicant.conf and touch boot/ssh
 # and copy the ssh pub keys.
-BOOT_DIR=`mount | grep mmcblk | grep boot | awk ' { print $3 } '`
-ROOT_DIR=`mount | grep mmcblk | grep rootfs | awk ' { print $3 } '`
+BOOT_DIR=`mount | grep vfat | grep bootfs | awk ' { print $3 } '`
+ROOT_DIR=`mount | grep ext4 | grep rootfs | awk ' { print $3 } '`
 if [ -z $BOOT_DIR ]; then
   echo "BOOT_DIR empty!"
   exit 1
