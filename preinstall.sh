@@ -37,9 +37,34 @@ sudo mkdir $ROOT_DIR/home/pi/.ssh
 sudo chown 1000:1000 $ROOT_DIR/home/pi/.ssh
 sudo cp $HOME/.ssh/id_rsa.pub $ROOT_DIR/home/pi/.ssh/authorized_keys
 sudo chown 1000:1000 $ROOT_DIR/home/pi/.ssh/authorized_keys
+sudo chmod 755 /run/media/jfclere/rootfs/home/pi
+sudo chmod 600 /run/media/jfclere/rootfs/home/pi/.ssh/authorized_keys
+sudo chmod 700 /run/media/jfclere/rootfs/home/pi/.ssh
+
 
 # Copy the install we will run at the first boot.
 sudo cp install.sh $ROOT_DIR/home/pi/
 sudo cp install.service $ROOT_DIR/lib/systemd/system
 sudo ln -s /lib/systemd/system/install.service $ROOT_DIR//etc/systemd/system/multi-user.target.wants
+
+# Arrange shadow and passwd
+sudo sed -i 's|^\(pi:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:\).*|\1/bin/bash|' /run/media/jfclere/rootfs/etc/passwd
+sudo sed -i 's|^pi:![^:]*|pi:|' /run/media/jfclere/rootfs/etc/shadow
+
+# Check syslog
+
+echo "=== Systemd Journald Parsing Hierarchy (Last Line Wins) ==="
+
+# 1. Read the main configuration file first
+if [ -f "/run/media/jfclere/rootfs/etc/systemd/journald.conf" ]; then
+    echo "[Main Config] /etc/systemd/journald.conf"
+    grep -E '^Storage=' "/run/media/jfclere/rootfs/etc/systemd/journald.conf"
+fi
+
+# 2. Scan drop-ins in alphabetical execution order
+# Systemd reads /usr/lib/... then /etc/...
+find "/run/media/jfclere/rootfs/usr/lib/systemd/journald.conf.d/" "/run/media/jfclere/rootfs/etc/systemd/journald.conf.d/" -name "*.conf" 2>/dev/null | sort | while read -r file; do
+    echo "[Drop-In File] ${file#/run/media/jfclere/rootfs}"
+    grep -E '^Storage=' "$file"
+done
 

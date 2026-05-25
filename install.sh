@@ -122,9 +122,6 @@ git clone https://github.com/jfclere/pisolar.git
 # password PassWord
 # the httpd.conf conf piece is /etc/httpd/conf.d/webdav.conf
 
-sudo passwd -d pi
-sudo chsh --shell /bin/bash pi
-
 #
 # ssh adjustments
 sudo sed -i 's|^#\?PasswordAuthentication.*|PasswordAuthentication no|' /etc/ssh/sshd_config

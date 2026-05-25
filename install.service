@@ -9,6 +9,9 @@ Type=oneshot
 User=pi
 ExecStart=/home/pi/install.sh
 ExecStartPost=/usr/bin/sudo /usr/bin/touch /var/lib/installed
+StandardOutput=journal+console
+StandardError=journal+console
+TTYPath=/dev/console
 
 [Install]
 WantedBy=multi-user.target
