@@ -101,7 +101,7 @@ checkstartwifi()
     # Check for bookworm, if yes wifi can be not yet configured.
     OSVER=`/usr/bin/grep VERSION_ID= /etc/os-release | /usr/bin/awk -F = ' { print $2 } '`
     OSVERID=`/usr/bin/echo $OSVER | /usr/bin/tr -d \"`
-    if [ $OSVERID -eq 12 ]; then
+    if [ $OSVERID -gt 12 ]; then
       /usr/bin/echo "bookworm!!!"
       # Try to connect to one of wifi we can see
       for sid in `/usr/bin/nmcli -t -f SSID device wifi`
@@ -112,7 +112,15 @@ checkstartwifi()
           /usr/bin/echo "Ignore $sid not in our list"
         else
           /usr/bin/echo "trying $sid $pass"
-          /usr/bin/sudo /usr/bin/nmcli device wifi connect $sid password $pass
+          /usr/bin/sudo /usr/bin/nmcli device wifi connect $sid password $pass ifname wlan0
+          if [ $? -ne 0 ]; then
+            # try to remove and reconnect
+            /usr/bin/sudo /usr/bin/nmcli connection delete $sid
+            /usr/bin/sudo /usr/bin/nmcli device wifi connect $sid password $pass ifname wlan0
+          else
+            /usr/bin/echo "Using $sid $pass"
+            break
+          fi
         fi
       done
     fi
