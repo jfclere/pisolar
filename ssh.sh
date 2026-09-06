@@ -48,8 +48,8 @@ add_server_key()
 #
 do_ssh()
 {
-  add_server_key $1
-  create_key $1
+  # Done by hands... add_server_key $1
+  # Done by hands...create_key $1
   i=0
   while [ $i -lt 60 ]
   do
@@ -77,6 +77,11 @@ do_ssh()
 }
 
 # try to connect to the server or wait 60 minutes to allow manual connections...
-do_ssh ${SERVER}
-/usr/bin/echo "Exiting maintenace mode"
-/usr/bin/sync
+ps -ef | grep ssh | grep -v grep | grep 2222
+if [ $? -ne 0 ]; then
+  do_ssh ${SERVER}
+  /usr/bin/echo "Exiting maintenace mode"
+  /usr/bin/sync
+else
+  /usr/bin/echo "Allready running"
+fi
