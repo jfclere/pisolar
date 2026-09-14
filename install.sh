@@ -146,6 +146,7 @@ sudo cp pisolar/journald.conf /etc/systemd/journald.conf
 sudo cp pisolar/logrotate.conf /etc/logrotate.conf
 sudo cp pisolar/image.service /etc/systemd/system/
 sudo systemctl enable image
+sudo systemd-tmpfiles --create --prefix /var/log/journal
 
 sudo reboot
 #wget -O bme280.py http://bit.ly/bme280py
