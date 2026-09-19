@@ -48,8 +48,9 @@ if [ "${code}" == "200" ]; then
   fi
 else
   # check for connection to the router
-  /usr/bin/ping -w 30 192.168.1.1
+  /bin/ping -w 30 192.168.1.1
   if [ $? -ne 0 ]; then
-    /usr/bin/sudo /usr/bin/reboot
+    /usr/bin/sync
+    /usr/bin/sudo /sbin/reboot
   fi
 fi 
