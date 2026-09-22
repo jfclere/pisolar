@@ -455,7 +455,7 @@ if [ "${code}" == "200" ]; then
       if [ $WAIT_TIME -eq 1 ]; then
         /usr/bin/grep -v image /tmp/crontab > /tmp/crontab.new
         /usr/bin/echo "* * * * * /home/pi/pisolar/image.sh" >> /tmp/crontab.new
-        /usr/bin/crontab /tmp/crontab,new
+        /usr/bin/crontab /tmp/crontab.new
         /usr/bin/echo "After crontab!"
       else
         /usr/bin/grep -v image /tmp/crontab > /tmp/crontab.new
