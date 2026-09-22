@@ -438,12 +438,12 @@ if [ "${code}" == "200" ]; then
     /usr/bin/grep image /tmp/crontab
     if [ $? -eq 0 ]; then
       # is the value OK
-      oldwait=`/usr/bin/awk '{ print $1 }' /tmp/crontab`
+      oldwait=`/usr/bin/grep image /tmp/crontab | /usr/bin/awk '{ print $1 }'`
       /usr/bin/echo "Old value: $oldwait"
       if [ "$oldwait" == "*" ]; then
         oldwait=1
       else
-        oldwait=`/usr/bin/echo $l | /usr/bin/awk -F / ' { print $2 } '`
+        oldwait=`/usr/bin/echo $oldwait | /usr/bin/awk -F / ' { print $2 } '`
         /usr/bin/echo "Old value: $oldwait"
       fi
       if [ $oldwait -eq $WAIT_TIME ]; then
@@ -453,12 +453,14 @@ if [ "${code}" == "200" ]; then
     fi
     if $UPDATE_CRON; then
       if [ $WAIT_TIME -eq 1 ]; then
-        /usr/bin/echo "* * * * * /home/pi/pisolar/image.sh" > /tmp/crontab
-        /usr/bin/crontab /tmp/crontab
+        /usr/bin/grep -v image /tmp/crontab > /tmp/crontab.new
+        /usr/bin/echo "* * * * * /home/pi/pisolar/image.sh" >> /tmp/crontab.new
+        /usr/bin/crontab /tmp/crontab,new
         /usr/bin/echo "After crontab!"
       else
-        /usr/bin/echo "*/$WAIT_TIME * * * * /home/pi/pisolar/image.sh" > /tmp/crontab
-        /usr/bin/crontab /tmp/crontab
+        /usr/bin/grep -v image /tmp/crontab > /tmp/crontab.new
+        /usr/bin/echo "*/$WAIT_TIME * * * * /home/pi/pisolar/image.sh" >> /tmp/crontab.new
+        /usr/bin/crontab /tmp/crontab.new
         /usr/bin/echo "After crontab"
       fi
     fi
