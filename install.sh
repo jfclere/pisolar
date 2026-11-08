@@ -61,11 +61,12 @@ sudo nmcli radio wifi on
 echo "install for wifi Done!!!"
 
 # wait until wifi is started
-while true
+for run in {1..6}
 do
   sid=`nmcli -t -f SSID device wifi`
   if [ "$sid" = "" ]; then
     echo "waiting for wifi..."
+    logger "waiting for wifi..."
     sudo nmcli -t -f SSID device wifi
     sudo rfkill list all
     echo "waiting for wifi!!!"
@@ -74,22 +75,24 @@ do
   else
     iw dev wlan0 info
     echo "Wifi started!"
+    logger "Wifi started!"
     break
   fi
 done
 
 # Try to connect to one of wifi we can see (Not needed???)
-#for sid in `nmcli -t -f SSID device wifi`
-#do
-#  echo "sid: $sid"
-#  pass=`getpass $sid`
-#  if [ "x$pass" = "x" ]; then
-#    echo "Ignore $sid not in our list"
-#  else
-#    echo "trying $sid $pass"
-#    sudo nmcli device wifi connect $sid password $pass
-#  fi
-#done
+for sid in `nmcli -t -f SSID device wifi`
+do
+  echo "sid: $sid"
+  pass=`getpass $sid`
+  if [ "x$pass" = "x" ]; then
+    echo "Ignore $sid not in our list"
+  else
+    echo "trying $sid $pass"
+    logger "trying $sid $pass"
+    sudo nmcli device wifi connect $sid password $pass ifname wlan0
+  fi
+done
 
 for run in {1..666}
 do
@@ -119,7 +122,12 @@ git clone https://github.com/jfclere/pisolar.git
 # password PassWord
 # the httpd.conf conf piece is /etc/httpd/conf.d/webdav.conf
 
-sudo passwd -d pi
+#
+# ssh adjustments
+sudo sed -i 's|^#\?PasswordAuthentication.*|PasswordAuthentication no|' /etc/ssh/sshd_config
+sudo ssh-keygen -A
+sudo systemctl enable ssh
+sudo systemctl start ssh
 
 # legacy camera
 # sudo /usr/bin/raspi-config nonint do_legacy 0
@@ -138,6 +146,7 @@ sudo cp pisolar/journald.conf /etc/systemd/journald.conf
 sudo cp pisolar/logrotate.conf /etc/logrotate.conf
 sudo cp pisolar/image.service /etc/systemd/system/
 sudo systemctl enable image
+sudo systemd-tmpfiles --create --prefix /var/log/journal
 
 sudo reboot
 #wget -O bme280.py http://bit.ly/bme280py

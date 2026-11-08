@@ -46,4 +46,12 @@ if [ "${code}" == "200" ]; then
       /usr/bin/sync
     fi
   fi
+else
+  # check for connection to the router
+  GATEWAY=$(ip route | awk '/default/ {print $3}')
+  /bin/ping -w 30 $GATEWAY
+  if [ $? -ne 0 ]; then
+    /usr/bin/sync
+    /usr/bin/sudo /sbin/reboot
+  fi
 fi 

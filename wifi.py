@@ -215,3 +215,30 @@ class wifi():
   # done close the socket
   s.close()
   return 0
+
+ # create a collection / directory on the server
+ def createdirserver(self, name, hostname, port, login, password):
+  print("createdirserver: " + hostname + ":" + str(port) + " " + name);
+  ai = socket.getaddrinfo(hostname, port)
+  addr = ai[0][-1]
+  s = socket.socket()
+  s.connect(addr)
+  cadata = self.getcadata()
+  context = ssl.create_default_context()
+  context.load_verify_locations(cadata=cadata)
+  s = context.wrap_socket(s, server_hostname=hostname) #, cadata=cadata)
+  s.write(bytes("MKCOL " + name + " HTTP/1.1\r\n", 'utf-8'))
+  s.write(b"Host: jfclere.myddns.me\r\n")
+  s.write(b"User-Agent: picow/0.0.0\r\n")
+  userpassword = login + ":" + password
+  autho=b"Authorization: Basic " + base64.b64encode(bytes(userpassword, 'utf-8'))
+  s.write(autho)
+  s.write(b"\r\n")
+  s.write(b"\r\n")
+
+  # just check we get a response from the moment
+  if not self.readwait(s, 50000):
+    raise Exception("createdirserver: timeout")
+  resp = s.read(512)
+  # print(resp)
+  s.close()

@@ -16,6 +16,7 @@ GPIO.setup(OCEANGPIO,GPIO.OUT)
 GPIO.output(OCEANGPIO,GPIO.LOW)
 
 # wait until we have an IP
+print("Starting...")
 i = 1
 while i < 30:
   try:
@@ -33,49 +34,55 @@ if i == 30:
 
 if not net:
   print("NO Network!")
-  exit(1)
 
 etag = ""
 myinfo = nodeinfo()
 bme280 = bme280.bme280()
 if myinfo.readsaved():
   # Nothing saved
-  print("NO Save values!")
+  print("NO saved values!")
+  if not net:
+    # No network nothing saved, exit and make sure we are OFF
+    GPIO.output(OCEANGPIO,GPIO.LOW)
+    print("Oops stopped")
+    exit(1)
 else:
+  print("Using saved values!")
   etag = myinfo.ETAG
 
 if myinfo.read():
-  # Use some default values
+  # Use the saved values
   print("myinfo.read() Failed!");
-  myinfo.TIME_ACTIVE = 1
-  myinfo.WAIT_TIME = 3405
-  myinfo.MAINT_MODE = False
 else:
   myinfo.saveconf()
 
 # We want the thermostat so use myinfo.TIME_ACTIVE as temperature
 while True:
-  if myinfo.TIME_ACTIVE > 0:
-    temperature,pressure,humidity = bme280.readBME280All()
-    if myinfo.TIME_ACTIVE > temperature:
-      GPIO.output(OCEANGPIO,GPIO.HIGH)
-      print("on until " + str(myinfo.TIME_ACTIVE) + " C have now " + str(temperature))
+  try:
+    if myinfo.TIME_ACTIVE > 0:
+      temperature,pressure,humidity = bme280.readBME280All()
+      if myinfo.TIME_ACTIVE > temperature:
+        GPIO.output(OCEANGPIO,GPIO.HIGH)
+        print("on until " + str(myinfo.TIME_ACTIVE) + " C have now " + str(temperature))
+      else:
+        print("off for 10 Minutes")
+        GPIO.output(OCEANGPIO,GPIO.LOW)
     else:
-      print("off for 10 Minutes")
       GPIO.output(OCEANGPIO,GPIO.LOW)
-  else:
-    GPIO.output(OCEANGPIO,GPIO.LOW)
-    print("off for 10 Minutes")
-  print("wait for 10 Minutes")
-  time.sleep(600)
-  if not myinfo.read():
-    # check the etag for change and save configuration
-    if etag != myinfo.ETAG:
-      print("ETAG: " + etag + " New: " + myinfo.ETAG)
-      etag = myinfo.ETAG
-      myinfo.saveconf()
+      print("off for 10 Minutes")
+    print("wait for 10 Minutes")
+    time.sleep(600)
+    if not myinfo.read():
+      # check the etag for change and save configuration
+      if etag != myinfo.ETAG:
+        print("ETAG: " + etag + " New: " + myinfo.ETAG)
+        etag = myinfo.ETAG
+        myinfo.saveconf()
 
-  print("Done")
+    print("Done")
+  except:
+    print("An exception occurred")
 
 # end make sure to stop
 GPIO.output(OCEANGPIO,GPIO.LOW)
+print("Oops stopped")

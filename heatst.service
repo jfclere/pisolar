@@ -1,0 +1,19 @@
+# To install cp /heatst.service lib/systemd/system and start then enable it.
+[Unit]
+Description=Heater control Service
+After=network.target
+StartLimitIntervalSec=60
+StartLimitBurst=20
+
+[Service]
+User=pi
+ExecStart=/home/pi/pisolar/heatst.py
+WorkingDirectory=/home/pi/pisolar
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+RestartSec=60
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

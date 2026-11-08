@@ -101,7 +101,7 @@ checkstartwifi()
     # Check for bookworm, if yes wifi can be not yet configured.
     OSVER=`/usr/bin/grep VERSION_ID= /etc/os-release | /usr/bin/awk -F = ' { print $2 } '`
     OSVERID=`/usr/bin/echo $OSVER | /usr/bin/tr -d \"`
-    if [ $OSVERID -eq 12 ]; then
+    if [ $OSVERID -gt 12 ]; then
       /usr/bin/echo "bookworm!!!"
       # Try to connect to one of wifi we can see
       for sid in `/usr/bin/nmcli -t -f SSID device wifi`
@@ -112,7 +112,15 @@ checkstartwifi()
           /usr/bin/echo "Ignore $sid not in our list"
         else
           /usr/bin/echo "trying $sid $pass"
-          /usr/bin/sudo /usr/bin/nmcli device wifi connect $sid password $pass
+          /usr/bin/sudo /usr/bin/nmcli device wifi connect $sid password $pass ifname wlan0
+          if [ $? -ne 0 ]; then
+            # try to remove and reconnect
+            /usr/bin/sudo /usr/bin/nmcli connection delete $sid
+            /usr/bin/sudo /usr/bin/nmcli device wifi connect $sid password $pass ifname wlan0
+          else
+            /usr/bin/echo "Using $sid $pass"
+            break
+          fi
         fi
       done
     fi
@@ -182,6 +190,24 @@ do_ssh()
     sleep 60
   done
   /usr/bin/sync
+}
+
+#
+# kill run/hanging libcamera-still
+do_kill()
+{  
+  /usr/bin/ps -ef | /usr/bin/grep libcamera-still | /usr/bin/grep -v grep >/dev/null 2>/dev/null
+  if [ $? -eq 0 ]; then
+    echo "libcamera-still hanging kill it!!!!"
+    pid=`/usr/bin/ps -ef | /usr/bin/grep libcamera-still | /usr/bin/grep -v grep | /usr/bin/awk ' { print $2 } '`
+    /usr/bin/kill -15 $pid
+  fi
+  /usr/bin/ps -ef | /usr/bin/grep rpicam-still | /usr/bin/grep -v grep >/dev/null 2>/dev/null
+  if [ $? -eq 0 ]; then
+    echo "rpicam-still hanging kill it!!!!"
+    pid=`/usr/bin/ps -ef | /usr/bin/grep rpicam-still | /usr/bin/grep -v grep | /usr/bin/awk ' { print $2 } '`
+    /usr/bin/kill -15 $pid
+  fi
 }
 
 #
@@ -291,9 +317,16 @@ if [ "${code}" == "200" ]; then
     # we have autofocus camera
     /home/pi/pisolar/Autofocus.py
   fi
+
+  # kill running libcamera-still (it might hang when using chron)
+  do_kill
   # For old raspbian version (before bullseye)
   # /usr/bin/raspistill -o /tmp/now.jpg
-  /usr/bin/libcamera-still -o /tmp/now.jpg
+  if [ -x /usr/bin/rpicam-still ]; then
+    /usr/bin/rpicam-still -o /tmp/now.jpg
+  else
+    /usr/bin/libcamera-still -o /tmp/now.jpg
+  fi
   if [ $? -eq 0 ]; then
     /usr/bin/python /home/pi/pisolar/bme280.py > /tmp/temp.txt
     if [ $? -eq 0 ]; then
@@ -336,12 +369,7 @@ if [ "${code}" == "200" ]; then
     /usr/bin/cadaver https://${SERVER}/webdav/ < /tmp/cmd.txt
   else
     /usr/bin/echo "Can't read image"
-    /usr/bin/ps -ef | /usr/bin/grep libcamera-still | /usr/bin/grep -v grep
-    if [ $? -eq 0 ]; then
-      echo "libcamera-still hanging kill it!!!!"
-      pid=`/usr/bin/ps -ef | /usr/bin/grep libcamera-still | /usr/bin/grep -v grep | /usr/bin/awk ' { print $2 } '`
-      /usr/bin/kill -15 $pid
-    fi
+    do_kill
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/report-${MACHINE_ID}-${address}
     /usr/bin/curl -o /dev/null --silent --head https://${SERVER}/machines/reportold-${MACHINE_ID}-camerapb
     /usr/bin/journalctl -u image > /tmp/temp.txt
@@ -410,12 +438,12 @@ if [ "${code}" == "200" ]; then
     /usr/bin/grep image /tmp/crontab
     if [ $? -eq 0 ]; then
       # is the value OK
-      oldwait=`/usr/bin/awk '{ print $1 }' /tmp/crontab`
+      oldwait=`/usr/bin/grep image /tmp/crontab | /usr/bin/awk '{ print $1 }'`
       /usr/bin/echo "Old value: $oldwait"
       if [ "$oldwait" == "*" ]; then
         oldwait=1
       else
-        oldwait=`/usr/bin/echo $l | /usr/bin/awk -F / ' { print $2 } '`
+        oldwait=`/usr/bin/echo $oldwait | /usr/bin/awk -F / ' { print $2 } '`
         /usr/bin/echo "Old value: $oldwait"
       fi
       if [ $oldwait -eq $WAIT_TIME ]; then
@@ -425,12 +453,14 @@ if [ "${code}" == "200" ]; then
     fi
     if $UPDATE_CRON; then
       if [ $WAIT_TIME -eq 1 ]; then
-        /usr/bin/echo "* * * * * /home/pi/pisolar/image.sh" > /tmp/crontab
-        /usr/bin/crontab /tmp/crontab
+        /usr/bin/grep -v image /tmp/crontab > /tmp/crontab.new
+        /usr/bin/echo "* * * * * /home/pi/pisolar/image.sh" >> /tmp/crontab.new
+        /usr/bin/crontab /tmp/crontab.new
         /usr/bin/echo "After crontab!"
       else
-        /usr/bin/echo "*/$WAIT_TIME * * * * /home/pi/pisolar/image.sh" > /tmp/crontab
-        /usr/bin/crontab /tmp/crontab
+        /usr/bin/grep -v image /tmp/crontab > /tmp/crontab.new
+        /usr/bin/echo "*/$WAIT_TIME * * * * /home/pi/pisolar/image.sh" >> /tmp/crontab.new
+        /usr/bin/crontab /tmp/crontab.new
         /usr/bin/echo "After crontab"
       fi
     fi
