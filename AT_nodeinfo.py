@@ -57,36 +57,39 @@ class nodeinfo:
       print('Exception: ' + str(e))
       return
 
-  # get our configuration from server
+  def fingerprint(self):
+    return self.REMOTE_DIR + ":" + str(self.WAIT_TIME) + ":" + str(self.BAT_LOW) + ":" + self.GIT_VER + ":" + str(self.BATCHARGED) + ":" + str(self.TIME_ACTIVE)
+
+  # get our configuration from server using SIM7028 AT commands
   def read(self):
     try:
-      r = requests.get('https://' + self.server + '/machines/' + self.machine_id)
-      if (r.status_code == 200):
-        # Read ETAG
-        self.ETAG = r.headers['ETAG']
-        # Read the information
-        i = 0
-        for l in r.iter_lines():
-          l = l.decode('ascii')
-          if i == 0:
-            self.REMOTE_DIR=l
-          if i == 1:
-            self.WAIT_TIME=int(l)
-          if i == 2:
-            self.BAT_LOW=int(l)
-          if i == 3:
-            self.GIT_VER=l
-          if i == 4:
-            self.BATCHARGED=int(l)
-          if i == 5:
-            self.TIME_ACTIVE=int(l)
-          i = i + 1
-        return False
-      if (r.status_code == 404):
-        # 404 means mainteance
-        self.MAINT_MODE=True
-        return False
-      return True
+      if not AT_http_s.HTTPINIT():
+        return True
+      if AT_http_s.HTTPPARA('https://' + self.server + '/machines/' + self.machine_id).PARA():
+        AT_http_s.HTTPTERM()
+        return True
+      resp = AT_http_s.HTTPACTION(0)
+      AT_http_s.HTTPTERM()
+      if not resp:
+        return True
+      info = AT_http_s.decode_nodeinfo(resp)
+      if 'REMOTE_DIR' in info:
+        self.REMOTE_DIR = info['REMOTE_DIR']
+      if 'WAIT_TIME' in info:
+        self.WAIT_TIME = info['WAIT_TIME']
+      if 'BAT_LOW' in info:
+        self.BAT_LOW = info['BAT_LOW']
+      if 'GIT_VER' in info:
+        self.GIT_VER = info['GIT_VER']
+      if 'BATCHARGED' in info:
+        self.BATCHARGED = info['BATCHARGED']
+      if 'TIME_ACTIVE' in info:
+        self.TIME_ACTIVE = info['TIME_ACTIVE']
+      newtag = self.fingerprint()
+      if newtag != self.ETAG:
+        self.ETAG = newtag
+        self.saveconf()
+      return False
     except Exception as e:
       print('Exception: ' + str(e))
       return True
