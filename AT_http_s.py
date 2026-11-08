@@ -208,6 +208,26 @@ def decode_nodeinfo(resp):
         info['TIME_ACTIVE'] = int(fields[5].strip())
     return info
 
+def HTTPPUT(url, data, login, password):
+    if not HTTPINIT():
+        return True
+    if HTTPPARA(url).PARA():
+        HTTPTERM()
+        return True
+    # set basic auth
+    import base64
+    auth = base64.b64encode((login + ':' + password).encode()).decode()
+    command = 'AT+HTTPPARA=USERDATA,"Authorization: Basic {}"\r\n'.format(auth)
+    ser.write(command.encode())
+    res = ser.readlines()[1].decode('utf-8').strip()
+    print(res)
+    HTTPDATA(data)
+    resp = HTTPACTION(4)
+    HTTPTERM()
+    if resp is None:
+        return True
+    return False
+
 def HTTPTERM():
     print("Closing HTTP connection")
     command = 'AT+HTTPTERM\r\n'
