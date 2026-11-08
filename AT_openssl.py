@@ -282,6 +282,13 @@ def tls_handshake(host):
             print("TLS error: " + str(e))
             return None, None, None
 
+def flush_outgoing(outgoing):
+    """Send any pending outgoing TLS data (e.g. post-handshake)"""
+    data = outgoing.read()
+    if data:
+        print("TLS->SIM flush: {} bytes".format(len(data)))
+        sim_send(data)
+
 def tls_send(sslobj, outgoing, data):
     """Send data over TLS"""
     sslobj.write(data)
@@ -290,18 +297,26 @@ def tls_send(sslobj, outgoing, data):
         return sim_send(encrypted)
     return True
 
-def tls_recv(sslobj, incoming, timeout=10):
-    """Receive data over TLS"""
-    sim_data = sim_recv(timeout=timeout)
-    if not sim_data:
-        return b''
-    incoming.write(sim_data)
+def tls_recv(sslobj, incoming, outgoing, timeout=10):
+    """Receive data over TLS, may need multiple sim_recv calls"""
     result = b''
-    while True:
+    for _ in range(10):
+        sim_data = sim_recv(timeout=timeout)
+        if not sim_data:
+            break
+        incoming.write(sim_data)
         try:
-            chunk = sslobj.read(4096)
-            result += chunk
+            chunk = sslobj.read(16384)
+            if chunk:
+                result += chunk
         except ssl.SSLWantReadError:
+            flush_outgoing(outgoing)
+            continue
+        except ssl.SSLError as e:
+            print("TLS read error: " + str(e))
+            break
+        flush_outgoing(outgoing)
+        if result:
             break
     return result
 
@@ -332,9 +347,10 @@ if __name__ == '__main__':
     from AT_nodeinfo import nodeinfo
     info = nodeinfo()
     request = "GET /machines/{} HTTP/1.1\r\nHost: {}\r\nConnection: close\r\n\r\n".format(info.machine_id, host)
+    flush_outgoing(outgoing)
     tls_send(sslobj, outgoing, request.encode())
 
-    response = tls_recv(sslobj, incoming)
+    response = tls_recv(sslobj, incoming, outgoing)
     print(response.decode('utf-8', errors='replace'))
 
     sim_close()
