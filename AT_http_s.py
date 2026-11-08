@@ -165,16 +165,48 @@ def HTTPREAD(data_length):
     print('Reading Response')
     command = 'AT+HTTPREAD=0,{}\r\n'.format(data_length)
     ser.write(command.encode())
-    #res_aciton = ser.readlines()[4].decode('utf-8').strip()
     res_aciton = ser.readlines()
-    # the response is something like [b'AT+HTTPREAD=0,25\r\n', b'OK\r\n', b'\r\n', b'+HTTPREAD: 25\r\n', b' ...  b'+HTTPREAD: 0\r\n'
     print(res_aciton)
-    resp = ""
-    for i in range(4, len(res_aciton)-1):
-        resp = resp + res_aciton[i].decode('utf-8')
+    resp = decode_httpread(res_aciton)
     print(resp)
     print("End Response")
     return resp
+
+def decode_httpread(lines):
+    resp = ""
+    indata = False
+    for line in lines:
+        text = line.decode('utf-8')
+        stripped = text.strip()
+        if stripped.startswith('+HTTPREAD:'):
+            size = int(stripped.split(':')[1].strip())
+            if size == 0:
+                break
+            indata = True
+            continue
+        if stripped.startswith('AT+HTTPREAD') or stripped == 'OK' or stripped == '':
+            if not indata:
+                continue
+        if indata:
+            resp = resp + text
+    return resp
+
+def decode_nodeinfo(resp):
+    fields = resp.strip().split('\n')
+    info = {}
+    if len(fields) > 0:
+        info['REMOTE_DIR'] = fields[0].strip()
+    if len(fields) > 1:
+        info['WAIT_TIME'] = int(fields[1].strip())
+    if len(fields) > 2:
+        info['BAT_LOW'] = int(fields[2].strip())
+    if len(fields) > 3:
+        info['GIT_VER'] = fields[3].strip()
+    if len(fields) > 4:
+        info['BATCHARGED'] = int(fields[4].strip())
+    if len(fields) > 5:
+        info['TIME_ACTIVE'] = int(fields[5].strip())
+    return info
 
 def HTTPTERM():
     print("Closing HTTP connection")
