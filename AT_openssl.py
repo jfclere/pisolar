@@ -17,6 +17,7 @@ ser = None
 running = True
 
 def sendcmd(cmd, timeout=2):
+    print(">>> " + cmd)
     ser.write((cmd + '\r\n').encode())
     time.sleep(0.5)
     lines = []
@@ -24,6 +25,8 @@ def sendcmd(cmd, timeout=2):
     while time.time() < end:
         if ser.in_waiting > 0:
             line = ser.readline().decode('utf-8', errors='replace').strip()
+            if line:
+                print("<<< " + line)
             lines.append(line)
             if line == 'OK' or line == 'ERROR' or line == 'CONNECT':
                 break
@@ -32,8 +35,13 @@ def sendcmd(cmd, timeout=2):
     return lines
 
 def sim_open(host, port):
-    sendcmd('AT+CNACT=0,1')
+    # Check network registration
+    sendcmd('AT+CEREG?')
+    # Activate PDP context
+    res = sendcmd('AT+CNACT=0,1', timeout=10)
     time.sleep(2)
+    # Check PDP status
+    sendcmd('AT+CNACT?')
     # Enable transparent mode
     sendcmd('AT+CIPMODE=1')
     # Open raw TCP connection
