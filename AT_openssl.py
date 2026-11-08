@@ -37,19 +37,29 @@ def sendcmd(cmd, timeout=2):
 def sim_open(host, port):
     # Check network registration
     sendcmd('AT+CEREG?')
-    # Check what IP commands are available
     sendcmd('AT+CGATT?')
     sendcmd('AT+CGDCONT?')
     sendcmd('AT+CGACT?')
-    # Try transparent mode with different CIPSTART syntaxes
+
+    # Clean up any previous sessions
+    sendcmd('AT+HTTPTERM')
+    sendcmd('AT+CACLOSE=0')
+    sendcmd('AT+CIPCLOSE=0')
+    sendcmd('AT+CIPSHUT')
+    time.sleep(1)
+
+    # Try 1: CIPSTART with old IP stack init
+    sendcmd('AT+CSTT="tm"')
+    sendcmd('AT+CIICR', timeout=10)
+    sendcmd('AT+CIFSR')
     sendcmd('AT+CIPMODE=1')
-    # Try without session id
     res = sendcmd('AT+CIPSTART="TCP","{}",{}'.format(host, port), timeout=30)
     for line in res:
         if 'CONNECT' in line:
             print("Transparent mode active to {}:{}".format(host, port))
             return True
-    # If that failed, try CAOPEN (non-transparent, raw TCP type=0)
+
+    # Try 2: CAOPEN raw TCP (buffered mode)
     print("CIPSTART failed, trying CAOPEN...")
     sendcmd('AT+CIPMODE=0')
     res = sendcmd('AT+CAOPEN=0,0,0,"{}",{}'.format(host, port), timeout=30)
@@ -57,6 +67,7 @@ def sim_open(host, port):
         if '+CAOPEN: 0,0' in line:
             print("CAOPEN connected to {}:{} (buffered mode)".format(host, port))
             return True
+
     print("TCP connection failed")
     return False
 
