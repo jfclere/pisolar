@@ -165,6 +165,7 @@ class nodeinfo:
 
 if __name__=='__main__':
 
+  AT_http_s.AT().AT_port()
   info = nodeinfo()
   print('server: ' + info.server)
   print('machine_id: ' + info.machine_id)
