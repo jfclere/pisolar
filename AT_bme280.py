@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import os
 import sys
 import AT_http_s
 from AT_nodeinfo import nodeinfo
