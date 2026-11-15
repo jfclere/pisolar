@@ -22,14 +22,14 @@ class writereg:
       mybytes = val.to_bytes(2, byteorder='little')
       data = unpack('BB', mybytes)
       data = [ mybytes[0], mybytes[1] ]
-      self.bus.write_i2c_block_data(DEVICE, wait, data)
+      self.bus.write_i2c_block_data(self.DEVICE, wait, data)
       return(data)
     elif wait == 8 :
       # write stopfor (long)
       mybytes = val.to_bytes(8, byteorder='little')
       data = unpack('BBBBBBBB', mybytes)
       data = [ mybytes[0], mybytes[1], mybytes[2], mybytes[3], mybytes[4], mybytes[5], mybytes[6], mybytes[7] ]
-      self.bus.write_i2c_block_data(DEVICE, wait, data)
+      self.bus.write_i2c_block_data(self.DEVICE, wait, data)
       return(data)
     elif wait == 16:
       # write testmode
