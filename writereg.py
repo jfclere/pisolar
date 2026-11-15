@@ -8,10 +8,10 @@ from ctypes import c_short
 from ctypes import c_byte
 from ctypes import c_ubyte
 
-DEVICE = 0x04 # Default device I2C address
 class writereg:
 
 
+  DEVICE = 0x04 # Default device I2C address
   def __init__(self, bus_num=1):
     self.bus = smbus.SMBus(bus_num) # Rev 2 Pi, Pi 2 & Pi 3 uses bus 1
                        # Rev 1 Pi uses bus 0
@@ -36,7 +36,7 @@ class writereg:
       mybytes = val.to_bytes(1, byteorder='little')
       data = unpack('B', mybytes)
       data = [ mybytes[0] ]
-      self.bus.write_i2c_block_data(DEVICE, wait, data)
+      self.bus.write_i2c_block_data(self.DEVICE, wait, data)
       return(data)
 
 if __name__ == "__main__":
