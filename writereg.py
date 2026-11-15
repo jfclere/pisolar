@@ -12,8 +12,8 @@ DEVICE = 0x04 # Default device I2C address
 class writereg:
 
 
-  def __init__(self):
-    self.bus = smbus.SMBus(1) # Rev 2 Pi, Pi 2 & Pi 3 uses bus 1
+  def __init__(self, bus_num=1):
+    self.bus = smbus.SMBus(bus_num) # Rev 2 Pi, Pi 2 & Pi 3 uses bus 1
                        # Rev 1 Pi uses bus 0
   def write(self, wait, val):
     # we can 0, 2, 4, 6, 8 or 16

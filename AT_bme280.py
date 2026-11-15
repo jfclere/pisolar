@@ -4,6 +4,7 @@ import sys
 import AT_http_s
 from AT_nodeinfo import nodeinfo
 from bme280 import bme280
+from writereg import writereg
 
 def readandsend(info):
     sensor = bme280()
@@ -36,3 +37,9 @@ if __name__ == '__main__':
 
     if readandsend(info):
         sys.exit(1)
+
+    mywritereg = writereg(3)
+    mywritereg.write(8, info.WAIT_TIME)
+    os.system("sudo init 0")
+    sys.exit(0)
+
